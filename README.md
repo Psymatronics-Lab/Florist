@@ -88,10 +88,11 @@ inspector on the right that shows details only when you select something.
   settings, and a page per seed: an editable **spec sheet** the loop reads every round, conference
   targets and deadline, connected files, **Pick** (at any stage), and a GitHub-style activity map.
 - **Compost** — an editable table and a theme graph; drag rows into Ideate or onto a seed; select
-  several to start a seed; **Connections** proposes seeds that combine things you saved.
-- **Feed** — alphaXiv, Hugging Face papers, arXiv, GitHub, Hacker News, Reddit, YouTube, Bluesky,
-  Mastodon, Lobsters, RSS, newsletters and a notes folder, each with its logo, ranked against your
-  seeds and taste. **I'm feeling lucky** opens an Ideate chat about something good.
+  several to start a seed.
+- **Feed** — papers (arXiv, alphaXiv, bioRxiv, Hugging Face), conference proceedings, popular and new
+  GitHub repos and Hugging Face models, Hacker News, Reddit, X, Bluesky, Mastodon, YouTube, Medium,
+  Hackster.io and RSS, each with its logo. **All** and **Viewed** views, newest first; one funnel
+  holds sorting, date, category and source filters. **I'm feeling lucky** opens an Ideate chat about something good.
 - **Settings** — your profile as **one markdown document** (`profile.md`, paste from anywhere;
   Florist keeps one section of learned notes and its own YAML in sync), models by provider with
   roles for Ideate / Fast / Strong, feed sources, statistics, and docs.

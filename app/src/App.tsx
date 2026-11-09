@@ -134,7 +134,7 @@ export default function App() {
         <aside className="flex w-[232px] shrink-0 flex-col border-r border-border-soft bg-panel">
           <button onClick={() => go("/")} className="flex items-center gap-2.5 px-4 pb-4 pt-4 text-left">
             <img src="/florist-icon.png" alt="" className="h-7 w-7" />
-            <span className="text-[16px] font-semibold tracking-[-0.01em]">Florist</span>
+            <span className="text-[17.5px] font-semibold tracking-[-0.01em]">Florist</span>
           </button>
           {inSettings ? (
             <SettingsNav tab={route.tab} />
@@ -144,7 +144,7 @@ export default function App() {
                 <NavItem icon={<MessageCircle size={15} />} label="Ideate" active={route.view === "ideate"} onClick={() => go("/")} drop="drop:ideate" dragging={!!dragItem} />
               </nav>
               <div className="mt-3 flex items-center justify-between px-4 pb-1">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted">Seeds</span>
+                <span className="text-[12px] font-semibold uppercase tracking-[0.07em] text-muted">Seeds</span>
                 <button title="New seed" className="text-muted hover:text-text" onClick={() => go("/greenhouse/new")}><Sprout size={13} /></button>
               </div>
               <div className="min-h-0 flex-1 overflow-auto px-2 pb-2">
@@ -152,7 +152,7 @@ export default function App() {
                   <SeedLink key={s.id} seed={s} dragging={!!dragItem}
                     active={(route.view === "seed" && route.id === s.id) || (route.view === "greenhouse" && route.id === s.id)} />
                 ))}
-                {seeds.isSuccess && !active.length && <div className="px-2.5 py-1 text-[12px] text-muted">No seeds yet</div>}
+                {seeds.isSuccess && !active.length && <div className="px-2.5 py-1 text-[13px] text-muted">No seeds yet</div>}
               </div>
               <nav className="flex flex-col gap-0.5 px-2 pb-2">
                 <NavItem icon={<Sprout size={15} />} label="Greenhouse" active={route.view === "greenhouse"} onClick={() => go("/greenhouse")} drop="drop:greenhouse" dragging={!!dragItem} />
@@ -165,7 +165,7 @@ export default function App() {
             {!inSettings && <PassiveMode />}
             <div className="flex items-center gap-1">
               <NavItem icon={<Settings size={15} />} label="Profile & settings" active={inSettings} onClick={() => go("/settings/profile")} />
-              <button title="Toggle theme" onClick={toggleTheme} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-subtext hover:bg-hover">
+              <button title="Toggle theme" onClick={toggleTheme} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-subtext hover:bg-hover">
                 {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
               </button>
             </div>
@@ -184,7 +184,7 @@ export default function App() {
         {dragItem && (
           <div className="flex w-[280px] items-center gap-2 rounded-lg border border-leaf bg-base px-3 py-2 shadow-pop">
             {dragging.type === "feed" ? <Logo id={feedLogoId(dragging.item.source_kind, dragging.item.url)} size={14} /> : <Recycle size={14} className="text-leaf" />}
-            <span className="truncate text-[12.5px] font-medium">{dragItem.title}</span>
+            <span className="truncate text-[13.5px] font-medium">{dragItem.title}</span>
           </div>
         )}
       </DragOverlay>
@@ -197,7 +197,7 @@ function NavItem({ icon, label, active, onClick, drop, dragging }: { icon: React
   const { setNodeRef, isOver } = useDroppable({ id: drop ?? `nav:${label}`, disabled: !drop });
   return (
     <button ref={setNodeRef} onClick={onClick}
-      className={cx("flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13.5px]",
+      className={cx("flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[14.5px]",
         active ? "bg-selected font-medium text-text" : "text-subtext hover:bg-hover hover:text-text",
         drop && dragging && "drop-ready", isOver && "drop-over")}>
       {icon}<span className="truncate">{label}</span>
@@ -212,10 +212,10 @@ function SeedLink({ seed, active, dragging }: { seed: Seed; active: boolean; dra
   const live = !!seed.run && seed.run.status === "running";
   return (
     <button ref={setNodeRef} onClick={() => go(`/seed/${seed.id}`)} title={seed.title}
-      className={cx("flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left",
+      className={cx("flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-left",
         active ? "bg-selected" : "hover:bg-hover", dragging && "drop-ready", isOver && "drop-over")}>
       <Leaf size={12} className={cx("shrink-0", STAGE_DOT[seed.stage?.stage ?? "seed"], live && "pulse-leaf")} />
-      <span className={cx("truncate text-[13px]", active && "font-medium")}>{seed.title}</span>
+      <span className={cx("truncate text-[14px]", active && "font-medium")}>{seed.title}</span>
     </button>
   );
 }
@@ -240,7 +240,7 @@ function PassiveMode() {
   const mode = p.data?.downtime.mode ?? "stop";
   return (
     <div className="mb-1.5 flex items-center gap-2 px-2.5">
-      <span className="text-[11px] text-muted" title="Background growth of queued seeds">Auto-grow</span>
+      <span className="text-[12px] text-muted" title="Background growth of queued seeds">Auto-grow</span>
       <div className="ml-auto flex rounded-md bg-surface p-0.5">
         {MODES.map(({ id, icon: Icon, label, hint }) => (
           <button key={id} title={`${label}: ${hint}`} onClick={() => set.mutate(id)}

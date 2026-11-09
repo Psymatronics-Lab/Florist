@@ -34,6 +34,8 @@
   --color-hover: color-mix(in oklab, var(--text) 6%, transparent);
   --color-selected: color-mix(in oklab, var(--text) 10%, transparent);
 
+  --font-weight-medium: 550;
+  --font-weight-semibold: 650;
   --font-sans: var(--sans);
   --font-mono: var(--mono);
   --radius-xs: 4px;
@@ -108,7 +110,8 @@
     background: var(--base);
     color: var(--text);
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 450;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
@@ -132,7 +135,7 @@
 .prose-florist p { margin: 0 0 0.6em; }
 .prose-florist ul, .prose-florist ol { margin: 0 0 0.6em; padding-left: 1.3em; }
 .prose-florist code { font-family: var(--mono); font-size: 0.9em; background: var(--surface); padding: 1px 4px; border-radius: 4px; }
-.prose-florist pre { background: var(--surface); padding: 10px 12px; border-radius: 8px; overflow: auto; font-size: 12.5px; }
+.prose-florist pre { background: var(--surface); padding: 10px 12px; border-radius: 8px; overflow: auto; font-size: 13.5px; }
 .prose-florist h1, .prose-florist h2, .prose-florist h3 { margin: 1em 0 0.4em; line-height: 1.25; }
 .prose-florist h1 { font-size: 1.35em; } .prose-florist h2 { font-size: 1.15em; } .prose-florist h3 { font-size: 1.02em; }
 .prose-florist a { color: var(--leaf-ink); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--leaf) 45%, transparent); }
@@ -160,7 +163,7 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
 .pulse-leaf { animation: pulse-leaf 1.4s ease-in-out infinite; }
 
 /* ---- Entrance animation ---------------------------------------------------- */
-.fl-petal { transform: scale(0) rotate(-35deg); opacity: 0; animation: fl-petal-in 620ms cubic-bezier(.34, 1.56, .64, 1) forwards; }
+.fl-petal { transform-box: view-box; transform-origin: 250px 250px; transform: scale(0) rotate(-35deg); opacity: 0; animation: fl-petal-in 620ms cubic-bezier(.34, 1.56, .64, 1) forwards; }
 @keyframes fl-petal-in { to { transform: scale(1) rotate(0); opacity: 1; } }
 .fl-char { display: inline-block; opacity: 0; transform: translateY(18px); animation: fl-char-in 520ms cubic-bezier(.16, 1, .3, 1) forwards; }
 @keyframes fl-char-in { to { opacity: 1; transform: none; } }

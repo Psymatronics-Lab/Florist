@@ -5,10 +5,10 @@
  */
 import {
   siAnthropic, siArxiv, siBluesky, siClaude, siDeepseek, siGithub, siGmail, siGooglegemini, siHuggingface,
-  siLobsters, siLmstudio, siMastodon, siMeta, siMistralai, siOllama, siOpenrouter, siReddit, siRss,
-  siSemanticscholar, siSubstack, siYcombinator, siYoutube,
+  siHackster, siLobsters, siLmstudio, siMastodon, siMedium, siMeta, siMistralai, siOllama, siOpenrouter, siReddit, siRss,
+  siSemanticscholar, siSubstack, siX, siYcombinator, siYoutube,
 } from "simple-icons";
-import { FileText, Folder, Globe, Link2, Mail, Recycle, Sparkles } from "lucide-react";
+import { Dna, FileText, Folder, Globe, Link2, Mail, Presentation, Recycle, Sparkles } from "lucide-react";
 import { ALPHAXIV_SHAPES, ALPHAXIV_VIEWBOX, OPENAI_PATHS, OPENAI_VIEWBOX } from "./brandPaths";
 
 type SimpleIcon = { path: string; hex: string; title: string };
@@ -16,7 +16,7 @@ type SimpleIcon = { path: string; hex: string; title: string };
 const SIMPLE: Record<string, SimpleIcon> = {
   arxiv: siArxiv, github: siGithub, hn: siYcombinator, ycombinator: siYcombinator, hackernews: siYcombinator,
   reddit: siReddit, youtube: siYoutube, bluesky: siBluesky, mastodon: siMastodon, huggingface: siHuggingface,
-  hf_papers: siHuggingface, rss: siRss, gmail: siGmail, anthropic: siAnthropic, claude: siClaude,
+  hf_papers: siHuggingface, hf_hub: siHuggingface, twitter: siX, medium: siMedium, hackster: siHackster, rss: siRss, gmail: siGmail, anthropic: siAnthropic, claude: siClaude,
   "claude-code": siClaude, meta: siMeta, meta_llama: siMeta, gemini: siGooglegemini, ollama: siOllama,
   openrouter: siOpenrouter, lobsters: siLobsters, substack: siSubstack, semantic_scholar: siSemanticscholar,
   mistral: siMistralai, deepseek: siDeepseek, lmstudio: siLmstudio, lm_studio: siLmstudio,
@@ -29,6 +29,7 @@ export const BRAND_NAME: Record<string, string> = {
   reddit: "Reddit", lobsters: "Lobsters", bluesky: "Bluesky", mastodon: "Mastodon", youtube: "YouTube",
   rss: "RSS", email: "Newsletter", folder: "Notes folder", manual: "Saved link", openalex: "OpenAlex",
   semantic_scholar: "Semantic Scholar", agent_web: "Web (agent)", hackernews: "Hacker News", compost: "Compost",
+  hf_hub: "Hugging Face", twitter: "X", medium: "Medium", hackster: "Hackster.io", biorxiv: "bioRxiv", conference: "Conferences",
 };
 
 export function Logo({ id, size = 16, className, title }: { id: string; size?: number; className?: string; title?: string }) {
@@ -65,8 +66,8 @@ export function Logo({ id, size = 16, className, title }: { id: string; size?: n
     );
   }
   const Fallback = { email: Mail, folder: Folder, manual: Link2, openalex: Globe, agent_web: Sparkles, compost: Recycle,
-    paper: FileText, web: Globe }[key] ?? Globe;
-  const color = { email: "#EA4335", folder: "#C98500", openalex: "#C2410C", compost: "var(--leaf)" }[key] ?? "var(--subtext)";
+    paper: FileText, web: Globe, biorxiv: Dna, conference: Presentation }[key] ?? Globe;
+  const color = { email: "#EA4335", folder: "#C98500", openalex: "#C2410C", compost: "var(--leaf)", biorxiv: "#BD2736", conference: "#3A8DFF" }[key] ?? "var(--subtext)";
   return <Fallback size={size} className={className} color={color} aria-label={label} />;
 }
 

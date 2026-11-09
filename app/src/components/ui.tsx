@@ -12,7 +12,7 @@ type BtnKind = "primary" | "secondary" | "ghost" | "danger";
 export function Button({ kind = "secondary", size = "md", className, busy, children, ...rest }:
   { kind?: BtnKind; size?: "sm" | "md"; busy?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const base = "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors whitespace-nowrap select-none";
-  const sz = size === "sm" ? "h-7 px-2.5 text-[12.5px]" : "h-8 px-3 text-[13px]";
+  const sz = size === "sm" ? "h-8 px-3 text-[13.5px]" : "h-9 px-3.5 text-[14px]";
   const k = {
     primary: "bg-leaf text-white hover:bg-leaf-dark shadow-card",
     secondary: "bg-base border border-border hover:bg-hover text-text",
@@ -30,7 +30,7 @@ export function Button({ kind = "secondary", size = "md", className, busy, child
 export function IconButton({ title, className, children, ...rest }: { title: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button title={title} aria-label={title}
-      className={cx("inline-flex h-7 w-7 items-center justify-center rounded-md text-subtext hover:bg-hover hover:text-text", className)} {...rest}>
+      className={cx("inline-flex h-8 w-8 items-center justify-center rounded-md text-subtext hover:bg-hover hover:text-text", className)} {...rest}>
       {children}
     </button>
   );
@@ -41,7 +41,7 @@ const TIER_STYLE: Record<Tier, string> = {
   exploration: "bg-blue-soft text-blue", personal: "bg-leaf-soft text-leaf-ink", formal: "bg-purple-soft text-purple",
 };
 export function TierBadge({ tier }: { tier: Tier }) {
-  return <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-medium", TIER_STYLE[tier])}>{TIER_LABEL[tier]}</span>;
+  return <span className={cx("rounded-full px-2 py-0.5 text-[12px] font-medium", TIER_STYLE[tier])}>{TIER_LABEL[tier]}</span>;
 }
 
 const STATE_STYLE: Record<SeedState, string> = {
@@ -49,7 +49,7 @@ const STATE_STYLE: Record<SeedState, string> = {
 };
 export function StateBadge({ state, live }: { state: SeedState; live?: boolean }) {
   return (
-    <span className={cx("inline-flex items-center gap-1 text-[11.5px] font-medium", STATE_STYLE[state])}>
+    <span className={cx("inline-flex items-center gap-1 text-[12.5px] font-medium", STATE_STYLE[state])}>
       <span className={cx("h-1.5 w-1.5 rounded-full bg-current", live && "pulse-leaf")} />
       {live ? "growing…" : state}
     </span>
@@ -59,7 +59,7 @@ export function StateBadge({ state, live }: { state: SeedState; live?: boolean }
 export function Chip({ children, onRemove, tone = "neutral", className }: { children: ReactNode; onRemove?: () => void; tone?: "neutral" | "leaf" | "blue" | "amber"; className?: string }) {
   const t = { neutral: "bg-surface text-subtext border-border-soft", leaf: "bg-leaf-soft text-leaf-ink border-transparent", blue: "bg-blue-soft text-blue border-transparent", amber: "bg-amber-soft text-amber border-transparent" }[tone];
   return (
-    <span className={cx("inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-[1px] text-[11.5px]", t, className)}>
+    <span className={cx("inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-[1px] text-[12.5px]", t, className)}>
       <span className="truncate">{children}</span>
       {onRemove && <button onClick={onRemove} className="opacity-60 hover:opacity-100"><X size={11} /></button>}
     </span>
@@ -82,7 +82,7 @@ export function ChipInput({ value, onChange, placeholder }: { value: string[]; o
           if (e.key === "Backspace" && !draft && value.length) onChange(value.slice(0, -1));
         }}
         onBlur={add}
-        className="min-w-[90px] flex-1 border-none bg-transparent p-0.5 text-[13px] shadow-none focus:shadow-none" />
+        className="min-w-[90px] flex-1 border-none bg-transparent p-0.5 text-[14px] shadow-none focus:shadow-none" />
     </div>
   );
 }
@@ -100,7 +100,7 @@ export function Modal({ open, onClose, title, children, width = 560, footer }: {
       <div className="flex max-h-[80vh] w-full flex-col overflow-hidden rounded-xl border border-border-soft bg-base shadow-modal"
         style={{ maxWidth: width }} onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border-soft px-5 py-3">
-          <div className="text-[15px] font-semibold">{title}</div>
+          <div className="text-[16px] font-semibold">{title}</div>
           <IconButton title="Close" onClick={onClose}><X size={15} /></IconButton>
         </div>
         <div className="flex-1 overflow-auto px-5 py-4">{children}</div>
@@ -115,7 +115,7 @@ export function Segmented<T extends string>({ value, onChange, options }: { valu
     <div className="inline-flex rounded-lg bg-surface p-0.5">
       {options.map((o) => (
         <button key={o.value} onClick={() => onChange(o.value)}
-          className={cx("flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[12.5px] font-medium",
+          className={cx("flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[13.5px] font-medium",
             value === o.value ? "bg-base text-text shadow-card" : "text-subtext hover:text-text")}>
           {o.label}
         </button>
@@ -128,8 +128,8 @@ export function Empty({ icon, title, children }: { icon?: ReactNode; title: stri
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
       {icon && <div className="text-muted">{icon}</div>}
-      <div className="text-[14px] font-medium">{title}</div>
-      {children && <div className="max-w-md text-[13px] text-subtext">{children}</div>}
+      <div className="text-[15px] font-medium">{title}</div>
+      {children && <div className="max-w-md text-[14px] text-subtext">{children}</div>}
     </div>
   );
 }
@@ -141,11 +141,11 @@ export function Spinner({ label }: { label?: string }) {
 export function Meter({ value, color = "var(--leaf)", label }: { value: number; color?: string; label?: string }) {
   return (
     <div className="flex items-center gap-2" title={label ? `${label}: ${value.toFixed(2)}` : undefined}>
-      {label && <span className="w-[74px] shrink-0 text-[11.5px] text-subtext">{label}</span>}
+      {label && <span className="w-[74px] shrink-0 text-[12.5px] text-subtext">{label}</span>}
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface">
         <div className="h-full rounded-full" style={{ width: `${Math.max(3, value * 100)}%`, background: color }} />
       </div>
-      <span className="w-8 text-right text-[11px] tabular-nums text-subtext">{value.toFixed(2)}</span>
+      <span className="w-8 text-right text-[12px] tabular-nums text-subtext">{value.toFixed(2)}</span>
     </div>
   );
 }
@@ -154,8 +154,8 @@ export function PageHeader({ title, subtitle, actions }: { title: ReactNode; sub
   return (
     <div className="flex items-end justify-between gap-4 border-b border-border-soft px-8 pb-4 pt-6">
       <div className="min-w-0">
-        <h1 className="m-0 text-[20px] font-semibold tracking-[-0.01em]">{title}</h1>
-        {subtitle && <div className="mt-0.5 text-[13px] text-subtext">{subtitle}</div>}
+        <h1 className="m-0 text-[21.5px] font-semibold tracking-[-0.01em]">{title}</h1>
+        {subtitle && <div className="mt-0.5 text-[14px] text-subtext">{subtitle}</div>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
@@ -166,7 +166,7 @@ export function Section({ title, right, children, className }: { title: ReactNod
   return (
     <section className={cx("mb-6", className)}>
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="m-0 text-[12px] font-semibold uppercase tracking-[0.06em] text-subtext">{title}</h3>
+        <h3 className="m-0 text-[13px] font-semibold uppercase tracking-[0.06em] text-subtext">{title}</h3>
         {right}
       </div>
       {children}
@@ -181,9 +181,9 @@ export function Md({ children }: { children: string }) {
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="mb-3 block">
-      <div className="mb-1 text-[12.5px] font-medium">{label}</div>
+      <div className="mb-1 text-[13.5px] font-medium">{label}</div>
       {children}
-      {hint && <div className="mt-1 text-[11.5px] text-muted">{hint}</div>}
+      {hint && <div className="mt-1 text-[12.5px] text-muted">{hint}</div>}
     </label>
   );
 }
@@ -206,7 +206,7 @@ export function Toaster() {
   }, [msg]);
   if (!msg) return null;
   return (
-    <div className={cx("fixed bottom-5 left-1/2 z-[60] max-w-[560px] -translate-x-1/2 rounded-lg px-4 py-2 text-[13px] shadow-pop",
+    <div className={cx("fixed bottom-5 left-1/2 z-[60] max-w-[560px] -translate-x-1/2 rounded-lg px-4 py-2 text-[14px] shadow-pop",
       msg.tone === "ok" ? "bg-text text-base" : "bg-red text-white")}>{msg.text}</div>
   );
 }

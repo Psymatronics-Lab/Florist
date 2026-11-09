@@ -24,8 +24,8 @@ export function Page({ header, children, inspector, inspectorWidth = 320, bodyCl
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
     <div className="min-w-0">
-      <h1 className="m-0 truncate text-[17px] font-semibold tracking-[-0.01em]">{children}</h1>
-      {sub && <div className="truncate text-[12px] text-subtext">{sub}</div>}
+      <h1 className="m-0 truncate text-[18.5px] font-semibold tracking-[-0.01em]">{children}</h1>
+      {sub && <div className="truncate text-[13px] text-subtext">{sub}</div>}
     </div>
   );
 }
@@ -41,8 +41,8 @@ export function Fold({ title, icon, count, children, open: initial = true, right
         <button onClick={() => setOpen((v) => !v)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
           {open ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
           {icon && <span className="text-subtext">{icon}</span>}
-          <span className="text-[12.5px] font-semibold">{title}</span>
-          {count != null && <span className="text-[11px] text-muted">{count}</span>}
+          <span className="text-[13.5px] font-semibold">{title}</span>
+          {count != null && <span className="text-[12px] text-muted">{count}</span>}
         </button>
         {right}
       </div>
@@ -52,5 +52,5 @@ export function Fold({ title, icon, count, children, open: initial = true, right
 }
 
 export function Empty2({ icon, text }: { icon?: ReactNode; text: string }) {
-  return <div className="flex items-center gap-2 py-1 text-[12px] text-muted">{icon}{text}</div>;
+  return <div className="flex items-center gap-2 py-1 text-[13px] text-muted">{icon}{text}</div>;
 }

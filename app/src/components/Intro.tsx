@@ -86,23 +86,23 @@ function Pollen() {
   return <canvas ref={ref} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />;
 }
 
-/** The Florist mark rebuilt from four leaves (+ the small inner leaf) so it can assemble. */
+/** The Florist mark as vector leaves (same geometry as florist-icon.png) so it can assemble leaf by leaf. */
+const LIGHT = "#00BF63", DARK = "#007A3D";
+const LEAVES: { d: string; fill: string; delay: number }[] = [
+  { d: "M80 80H135A115 115 0 0 1 250 195V250H195A115 115 0 0 1 80 135Z", fill: LIGHT, delay: 420 },
+  { d: "M420 80H365A115 115 0 0 0 250 195V250H305A115 115 0 0 0 420 135Z", fill: LIGHT, delay: 550 },
+  { d: "M420 420H365A115 115 0 0 1 250 305V250H305A115 115 0 0 1 420 365Z", fill: LIGHT, delay: 680 },
+  { d: "M80 420H135A115 115 0 0 0 250 305V250H195A115 115 0 0 0 80 365Z", fill: DARK, delay: 810 },
+  { d: "M344 156H299A49 49 0 0 0 250 205V250H295A49 49 0 0 0 344 205Z", fill: DARK, delay: 980 },
+];
+
 export function FloristMark({ size = 96, animate = false }: { size?: number; animate?: boolean }) {
-  const light = "#00BF63", dark = "#007A3D";
-  const leaf = (style: React.CSSProperties, i: number) => (
-    <span className={animate ? "fl-petal" : ""} style={{ position: "absolute", width: "47%", height: "47%",
-      animationDelay: `${420 + i * 130}ms`, ...style }} />
-  );
   return (
-    <span className="relative inline-block" style={{ width: size, height: size }} aria-label="Florist">
-      {leaf({ left: 0, top: 0, background: light, borderRadius: "0 100% 0 100%", transformOrigin: "100% 100%" }, 0)}
-      {leaf({ right: 0, top: 0, background: light, borderRadius: "100% 0 100% 0", transformOrigin: "0% 100%" }, 1)}
-      {leaf({ right: 0, bottom: 0, background: light, borderRadius: "0 100% 0 100%", transformOrigin: "0% 0%" }, 2)}
-      {leaf({ left: 0, bottom: 0, background: dark, borderRadius: "100% 0 100% 0", transformOrigin: "100% 0%" }, 3)}
-      <span className={animate ? "fl-petal" : ""} style={{ position: "absolute", left: "53%", top: "28%", width: "25%",
-        height: "25%", background: dark, borderRadius: "100% 0 100% 0", transformOrigin: "0% 100%",
-        animationDelay: animate ? "980ms" : undefined }} />
-    </span>
+    <svg width={size} height={size} viewBox="72 72 356 356" role="img" aria-label="Florist" style={{ overflow: "visible" }}>
+      {LEAVES.map((l) => (
+        <path key={l.d} d={l.d} fill={l.fill} className={animate ? "fl-petal" : undefined} style={animate ? { animationDelay: `${l.delay}ms` } : undefined} />
+      ))}
+    </svg>
   );
 }
 
@@ -126,7 +126,7 @@ export default function Intro({ onDone }: { onDone: () => void }) {
             <span key={i} className={reduced ? "" : "fl-char"} style={{ animationDelay: `${1150 + i * 45}ms` }}>{ch}</span>
           ))}
         </div>
-        <div className={`text-[14px] text-subtext ${reduced ? "" : "fl-tagline"}`}>grows ideas</div>
+        <div className={`text-[15px] text-subtext ${reduced ? "" : "fl-tagline"}`}>grows ideas</div>
       </div>
     </div>
   );

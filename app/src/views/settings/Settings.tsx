@@ -22,8 +22,8 @@ export default function SettingsView({ tab }: { tab: string }) {
 export function SettingsTitle({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="mb-6">
-      <h1 className="m-0 text-[20px] font-semibold tracking-[-0.01em]">{title}</h1>
-      {sub && <p className="m-0 mt-1 text-[13px] text-subtext">{sub}</p>}
+      <h1 className="m-0 text-[21.5px] font-semibold tracking-[-0.01em]">{title}</h1>
+      {sub && <p className="m-0 mt-1 text-[14px] text-subtext">{sub}</p>}
     </div>
   );
 }
@@ -34,7 +34,7 @@ export function Card({ title, icon, children, right }: { title?: string; icon?: 
       {title && (
         <div className="flex items-center gap-2 border-b border-border-soft px-5 py-3">
           {icon && <span className="text-subtext">{icon}</span>}
-          <h2 className="m-0 text-[14px] font-semibold">{title}</h2>
+          <h2 className="m-0 text-[15px] font-semibold">{title}</h2>
           <div className="ml-auto">{right}</div>
         </div>
       )}

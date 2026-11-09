@@ -46,10 +46,10 @@ export default function MarkdownDoc({ text, onSave, saving, outline = false, own
     <div className="flex overflow-hidden rounded-xl border border-border-soft bg-base">
       {outline && (
         <nav className="w-[170px] shrink-0 border-r border-border-soft bg-canvas py-2">
-          <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">Sections</div>
+          <div className="px-3 pb-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-muted">Sections</div>
           {heads.map((h) => (
             <button key={h.line} onClick={() => jump(h.line)} style={{ paddingLeft: 12 + (h.level - 1) * 10 }}
-              className={cx("block w-full truncate py-1 pr-2 text-left text-[12.5px]", active === h.line ? "text-leaf-ink" : "text-subtext hover:text-text",
+              className={cx("block w-full truncate py-1 pr-2 text-left text-[13.5px]", active === h.line ? "text-leaf-ink" : "text-subtext hover:text-text",
                 owned && h.title.toLowerCase().includes(owned.label.toLowerCase()) && "italic")}>
               {h.title}
             </button>
@@ -59,10 +59,10 @@ export default function MarkdownDoc({ text, onSave, saving, outline = false, own
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-2 border-b border-border-soft px-3 py-1.5">
           <div className="flex rounded-md bg-surface p-0.5">
-            <button onClick={() => setPreview(false)} className={cx("flex h-6 items-center gap-1 rounded px-2 text-[12px]", !preview ? "bg-base shadow-card" : "text-subtext")}><Pencil size={11} />Edit</button>
-            <button onClick={() => setPreview(true)} className={cx("flex h-6 items-center gap-1 rounded px-2 text-[12px]", preview ? "bg-base shadow-card" : "text-subtext")}><Eye size={11} />Preview</button>
+            <button onClick={() => setPreview(false)} className={cx("flex h-6 items-center gap-1 rounded px-2 text-[13px]", !preview ? "bg-base shadow-card" : "text-subtext")}><Pencil size={11} />Edit</button>
+            <button onClick={() => setPreview(true)} className={cx("flex h-6 items-center gap-1 rounded px-2 text-[13px]", preview ? "bg-base shadow-card" : "text-subtext")}><Eye size={11} />Preview</button>
           </div>
-          <span className="text-[11.5px] text-muted">{dirty ? "Unsaved changes · Ctrl+S" : "Saved"}</span>
+          <span className="text-[12.5px] text-muted">{dirty ? "Unsaved changes · Ctrl+S" : "Saved"}</span>
           <Button size="sm" kind={dirty ? "primary" : "secondary"} className="ml-auto" disabled={!dirty} busy={saving} onClick={() => onSave(draft)}>Save</Button>
         </div>
         {preview ? (
@@ -74,7 +74,7 @@ export default function MarkdownDoc({ text, onSave, saving, outline = false, own
         ) : (
           <textarea ref={area} value={draft} onChange={(e) => setDraft(e.target.value)} spellCheck placeholder={placeholder}
             onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); if (dirty) onSave(draft); } }}
-            className="block w-full flex-1 resize-y rounded-none border-0 px-5 py-4 font-mono text-[13px] leading-[21px] shadow-none focus:shadow-none"
+            className="block w-full flex-1 resize-y rounded-none border-0 px-5 py-4 font-mono text-[14px] leading-[21px] shadow-none focus:shadow-none"
             style={{ minHeight }} />
         )}
       </div>
