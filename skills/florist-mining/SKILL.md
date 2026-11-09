@@ -25,3 +25,5 @@ it), `tier`, `technologies`. Proposals land as *candidate* seeds the user can ac
 
 If you are a coding agent driving Florist: get the input with `florist compost mine --prepare --json`
 and submit with `florist compost mine --submit <file.json>`.
+
+When `focus` is not empty, the user asked for connections around that subject: prefer those.

@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "reply": {
+      "description": "markdown report for the chat",
+      "title": "Reply",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reply"
+  ],
+  "title": "SkillReport",
+  "type": "object"
+}

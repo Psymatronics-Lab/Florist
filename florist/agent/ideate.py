@@ -14,7 +14,7 @@ from typing import Any
 from .. import gateway, profile, skills
 from ..schemas import IdeateReply, SeedFromChat, now_iso
 from ..store import db
-from . import context, greenhouse, loop, preferences
+from . import composer, context, greenhouse, loop, preferences
 
 
 def _row(chat_id: str) -> dict[str, Any]:
@@ -69,17 +69,41 @@ def remove_context(chat_id: str, kind: str, ref: str) -> dict[str, Any]:
     return get(chat_id)
 
 
-def message(chat_id: str, text: str, skills_on: list[str] | None = None, model: str | None = None,
-            effort: str | None = None) -> dict[str, Any]:
-    d = _row(chat_id)
-    skills_on = [s for s in (skills_on or []) if s in context.COMPOSER_SKILLS]
+def _say(chat_id: str, role: str, content: str, actions: list[dict[str, Any]]) -> None:
     db.ex("INSERT INTO chat(seed_id, role, content, actions, created) VALUES (?,?,?,?,?)",
-          (chat_id, "user", text, json.dumps([{"type": "skills", "skills": skills_on}] if skills_on else []), now_iso()))
-    retrieved = context.run_skills(skills_on, text) if skills_on else {}
+          (chat_id, role, content, json.dumps(actions), now_iso()))
+
+
+def _retitle(chat_id: str, current: str, candidate: str) -> str:
+    """A new chat takes its title from its first exchange."""
+    title = current
+    if current in ("New idea", "") and len(greenhouse.chat_history(chat_id, 4)) <= 2:
+        title = candidate[:60]
+    db.ex("UPDATE ideate_chats SET title=?, updated=? WHERE id=?", (title, now_iso(), chat_id))
+    return title
+
+
+def message(chat_id: str, text: str, skills_on: list[str] | None = None, model: str | None = None,
+            effort: str | None = None, tier: str = "") -> dict[str, Any]:
+    """One chat turn. A composer skill replaces the normal reply with what that skill produces."""
+    d = _row(chat_id)
+    skill = composer.pick(skills_on)
+    _say(chat_id, "user", text or composer.label(skill), [{"type": "skills", "skills": [skill]}] if skill else [])
+    if skill == composer.LOOP_SKILL:
+        seed = to_seed(chat_id, tier, model)["seed"]
+        reply = f"Planted “{seed['title']}” and started the research loop."
+        _say(chat_id, "assistant", reply, [])
+        return {"reply": reply, "seed_id": seed["id"], "title": _retitle(chat_id, d["title"], seed["title"])}
+    if skill:
+        out = composer.run(skill, composer.Scope(
+            message=text, title=d["title"], context_items=context.resolve(d["context"]), model=model, effort=effort,
+            conversation=[{"role": m["role"], "content": m["content"]} for m in greenhouse.chat_history(chat_id, 20)
+                          if m["role"] in ("user", "assistant")]))
+        _say(chat_id, "assistant", out["reply"], out["actions"])
+        return {**out, "title": _retitle(chat_id, d["title"], text or composer.label(skill))}
     ctx = {
         "profile": profile.brief(),
         "context_items": context.resolve(d["context"]),
-        "retrieved": retrieved,
         "conversation": [{"role": m["role"], "content": m["content"]} for m in greenhouse.chat_history(chat_id, 20)
                          if m["role"] in ("user", "assistant")],
         "existing_seeds": [s.title for s in db.list_seeds()][:20],
@@ -88,16 +112,8 @@ def message(chat_id: str, text: str, skills_on: list[str] | None = None, model: 
         gateway.Call(step="ideate", model=model, effort=effort, hints={"topic": text[:40]}),
         skills.system_prompt("ideate"), loop.render_context(ctx) + f"\n\nUser: {text}", IdeateReply,
     )
-    meta = [{"type": "suggest_seed", "title": reply.seed_title}] if reply.suggest_seed else []
-    if retrieved:
-        meta.append({"type": "retrieved", "skills": skills_on,
-                     "count": sum(len(v) for v in retrieved.values() if isinstance(v, list))})
-    db.ex("INSERT INTO chat(seed_id, role, content, actions, created) VALUES (?,?,?,?,?)",
-          (chat_id, "assistant", reply.reply, json.dumps(meta), now_iso()))
-    title = d["title"]
-    if title in ("New idea", "") and len(greenhouse.chat_history(chat_id, 4)) <= 2:
-        title = (reply.seed_title or text)[:60]
-    db.ex("UPDATE ideate_chats SET title=?, updated=? WHERE id=?", (title, now_iso(), chat_id))
+    _say(chat_id, "assistant", reply.reply, [{"type": "suggest_seed", "title": reply.seed_title}] if reply.suggest_seed else [])
+    title = _retitle(chat_id, d["title"], reply.seed_title or text)
     return {"reply": reply.reply, "suggest_seed": reply.suggest_seed, "seed_title": reply.seed_title, "title": title}
 
 
@@ -116,6 +132,7 @@ def to_seed(chat_id: str, tier: str = "", model: str | None = None) -> dict[str,
         constraints={"must_use": out.must_use, "must_avoid": out.must_avoid},
         compost_ids=[c["id"] for c in d["context"] if c["kind"] == "compost"],
         feed_ids=[c["id"] for c in d["context"] if c["kind"] == "feed"], origin="ideate",
+        attachment_ids=[c["id"] for c in d["context"] if c["kind"] == "file"],
     )
     db.ex("UPDATE ideate_chats SET seed_id=?, updated=? WHERE id=?", (seed.id, now_iso(), chat_id))
     preferences.record("seed_from", "ideate", chat_id, {"tags": [], "technologies": out.technologies, "title": out.title})

@@ -24,13 +24,13 @@ export default function Docs() {
   return (
     <div className="flex h-full">
       <nav className="w-[220px] shrink-0 overflow-auto border-r border-border-soft px-3 py-7">
-        <div className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted">Docs</div>
+        <div className="px-2 pb-2 text-[12px] font-semibold uppercase tracking-[0.07em] text-muted">Docs</div>
         {docs.data?.map((d) => (
           <div key={d.name}>
-            <button onClick={() => setName(d.name)} className={cx("block w-full rounded-md px-2 py-1.5 text-left text-[13px]", cur === d.name ? "bg-selected font-medium" : "text-subtext hover:bg-hover hover:text-text")}>{d.title}</button>
+            <button onClick={() => setName(d.name)} className={cx("block w-full rounded-md px-2 py-1.5 text-left text-[14px]", cur === d.name ? "bg-selected font-medium" : "text-subtext hover:bg-hover hover:text-text")}>{d.title}</button>
             {cur === d.name && toc.map((h) => (
               <a key={h} href={`#doc-${slug(h)}`} onClick={(e) => { e.preventDefault(); document.getElementById(`doc-${slug(h)}`)?.scrollIntoView({ behavior: "smooth" }); }}
-                className="block truncate py-1 pl-5 pr-2 text-[12px] text-subtext hover:text-text">{h}</a>
+                className="block truncate py-1 pl-5 pr-2 text-[13px] text-subtext hover:text-text">{h}</a>
             ))}
           </div>
         ))}
@@ -46,11 +46,11 @@ export default function Docs() {
                 if (!className && !s.includes("\n")) return <code>{children}</code>;
                 return (
                   <div className="my-3 overflow-hidden rounded-lg bg-[#16181a] text-[#e6e6e6]">
-                    <div className="flex items-center gap-1.5 border-b border-white/10 px-3 py-1.5 text-[11px] text-white/50">
+                    <div className="flex items-center gap-1.5 border-b border-white/10 px-3 py-1.5 text-[12px] text-white/50">
                       <Terminal size={11} />{className?.replace("language-", "") || "terminal"}
                       <button className="ml-auto flex items-center gap-1 hover:text-white" onClick={() => { navigator.clipboard.writeText(s.replace(/^\$ /gm, "")); toast("Copied"); }}><Copy size={11} />Copy</button>
                     </div>
-                    <pre className="m-0 overflow-auto px-4 py-3 font-mono text-[12.5px] leading-relaxed">{s.split("\n").map((l, i) => (
+                    <pre className="m-0 overflow-auto px-4 py-3 font-mono text-[13.5px] leading-relaxed">{s.split("\n").map((l, i) => (
                       <div key={i} className={l.trim().startsWith("#") ? "text-white/45" : ""}>{l}</div>
                     ))}</pre>
                   </div>

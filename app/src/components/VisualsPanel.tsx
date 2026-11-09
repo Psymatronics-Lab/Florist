@@ -38,7 +38,7 @@ function VisualCard({ v, seedId, mermaidGraph }: { v: Visual; seedId: string; me
   return (
     <figure className="m-0 overflow-hidden rounded-xl border border-border-soft bg-base">
       <div className="flex items-center justify-between border-b border-border-soft px-4 py-2.5">
-        <div><div className="text-[14px] font-semibold">{v.title}</div><div className="text-[12px] text-subtext">{v.caption}</div></div>
+        <div><div className="text-[15px] font-semibold">{v.title}</div><div className="text-[13px] text-subtext">{v.caption}</div></div>
         {modes.length > 1 && <Segmented value={mode} onChange={setMode} options={modes} />}
       </div>
       <div className="bg-canvas p-3">
@@ -67,7 +67,7 @@ function MermaidView({ url, code }: { url?: string; code?: string }) {
     })();
     return () => { alive = false; };
   }, [url, code]);
-  return err ? <pre className="text-[12px] text-red">{err}</pre> : <div ref={ref} className="flex justify-center overflow-auto [&_svg]:max-w-full" />;
+  return err ? <pre className="text-[13px] text-red">{err}</pre> : <div ref={ref} className="flex justify-center overflow-auto [&_svg]:max-w-full" />;
 }
 
 function PlotlyView({ url }: { url: string }) {
@@ -98,22 +98,22 @@ function SmokeCard({ s, seedId }: { s: Smoke; seedId: string }) {
       <div className="flex items-start gap-2">
         <FlaskConical size={15} className="mt-0.5 shrink-0 text-amber" />
         <div className="min-w-0 flex-1">
-          <div className="text-[13.5px] font-semibold">{s.assumption}</div>
-          <div className="text-[12px] text-subtext">{s.rationale}{s.expected && <> · expect: {s.expected}</>}</div>
-          {s.verdict && <div className="mt-1 text-[12.5px]"><b>{s.status}:</b> {s.verdict}</div>}
+          <div className="text-[14.5px] font-semibold">{s.assumption}</div>
+          <div className="text-[13px] text-subtext">{s.rationale}{s.expected && <> · expect: {s.expected}</>}</div>
+          {s.verdict && <div className="mt-1 text-[13.5px]"><b>{s.status}:</b> {s.verdict}</div>}
         </div>
-        <span className="text-[11px] uppercase tracking-wide text-subtext">{s.status}</span>
+        <span className="text-[12px] uppercase tracking-wide text-subtext">{s.status}</span>
       </div>
       <div className="mt-2 flex items-center gap-2">
-        <button onClick={() => setShowCode((v) => !v)} className="text-[12px] text-subtext hover:text-text">{showCode ? "Hide" : "Review"} code · {s.timeout_s}s limit</button>
+        <button onClick={() => setShowCode((v) => !v)} className="text-[13px] text-subtext hover:text-text">{showCode ? "Hide" : "Review"} code · {s.timeout_s}s limit</button>
         {s.status === "pending" && <>
           <span className="flex-1" />
           <Button size="sm" kind="ghost" onClick={() => run.mutate(false)}>Reject</Button>
           <Button size="sm" kind="primary" onClick={() => run.mutate(true)}>Approve & run</Button>
         </>}
       </div>
-      {showCode && <pre className="mt-1 max-h-72 overflow-auto rounded-md bg-surface p-3 font-mono text-[12px]">{s.code}</pre>}
-      {showCode && s.stdout && s.status !== "pending" && <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-surface p-2 font-mono text-[11.5px] text-subtext">{s.stdout.slice(-1500)}</pre>}
+      {showCode && <pre className="mt-1 max-h-72 overflow-auto rounded-md bg-surface p-3 font-mono text-[13px]">{s.code}</pre>}
+      {showCode && s.stdout && s.status !== "pending" && <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-surface p-2 font-mono text-[12.5px] text-subtext">{s.stdout.slice(-1500)}</pre>}
     </div>
   );
 }

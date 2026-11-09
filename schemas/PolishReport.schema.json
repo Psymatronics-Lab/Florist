@@ -1,0 +1,32 @@
+{
+  "properties": {
+    "stage": {
+      "enum": [
+        "spark",
+        "shaped",
+        "scoped",
+        "grounded",
+        "ready"
+      ],
+      "title": "Stage",
+      "type": "string"
+    },
+    "why": {
+      "description": "one sentence: why the idea is at this stage",
+      "title": "Why",
+      "type": "string"
+    },
+    "reply": {
+      "description": "markdown: the idea shored up for this stage",
+      "title": "Reply",
+      "type": "string"
+    }
+  },
+  "required": [
+    "stage",
+    "why",
+    "reply"
+  ],
+  "title": "PolishReport",
+  "type": "object"
+}

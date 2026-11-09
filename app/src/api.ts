@@ -18,7 +18,7 @@ export interface Seed {
   counts?: Record<string, number>;
 }
 
-export interface CtxItem { kind: "compost" | "feed" | "source" | "seed"; id: string; title?: string }
+export interface CtxItem { kind: "compost" | "feed" | "source" | "seed" | "file"; id: string; title?: string }
 export interface ChatMsg { id: number; role: string; content: string; actions: any[]; created: string }
 export interface IdeateChat { id: string; title: string; seed_id: string; context: CtxItem[]; created: string; updated: string; messages?: ChatMsg[] }
 export interface Provider {
@@ -59,9 +59,9 @@ export interface Smoke {
   timeout_s: number; status: string; stdout: string; stderr: string; metrics: Record<string, number>; verdict: string; created: string;
 }
 export interface FeedItem {
-  id: string; source_kind: string; source_name: string; url: string; title: string; author: string; published: string;
+  id: string; source_id: string; source_kind: string; source_name: string; url: string; title: string; author: string; published: string;
   content: string; summary: string; tags: string[]; technologies: string[]; relevance: number; score: number; why: string;
-  related_seed_ids: string[]; status: string; created: string;
+  related_seed_ids: string[]; status: string; created: string; viewed_at: string;
 }
 export interface CompostItem {
   id: string; title: string; links: string[]; source: string; date: string; summary: string; takeaways: string[];

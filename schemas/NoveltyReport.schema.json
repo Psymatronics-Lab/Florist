@@ -1,0 +1,34 @@
+{
+  "properties": {
+    "novelty": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Novelty",
+      "type": "number"
+    },
+    "crowdedness": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Crowdedness",
+      "type": "number"
+    },
+    "gap": {
+      "default": "",
+      "description": "what is genuinely not done yet; empty if nothing",
+      "title": "Gap",
+      "type": "string"
+    },
+    "reply": {
+      "description": "markdown: closest work, how the idea differs, and what to do about it",
+      "title": "Reply",
+      "type": "string"
+    }
+  },
+  "required": [
+    "novelty",
+    "crowdedness",
+    "reply"
+  ],
+  "title": "NoveltyReport",
+  "type": "object"
+}

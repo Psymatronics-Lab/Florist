@@ -161,6 +161,14 @@
       "title": "Feed Ids",
       "type": "array"
     },
+    "attachment_ids": {
+      "description": "files the user attached",
+      "items": {
+        "type": "string"
+      },
+      "title": "Attachment Ids",
+      "type": "array"
+    },
     "constraints": {
       "$ref": "#/$defs/Constraints"
     },

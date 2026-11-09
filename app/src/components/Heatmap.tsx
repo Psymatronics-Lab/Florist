@@ -33,12 +33,12 @@ export default function Heatmap({ days, label = "activities", cell = 11 }: { day
         )))}
       </svg>
       {hover && (
-        <div className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-text px-2 py-1 text-[11.5px] text-base shadow-pop"
+        <div className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-text px-2 py-1 text-[12.5px] text-base shadow-pop"
           style={{ left: Math.min(hover.x, width - 150), top: hover.y - 30 }}>
           <b>{hover.d.count}</b> {label} · {new Date(hover.d.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
         </div>
       )}
-      <div className="mt-1 flex items-center gap-1 text-[11px] text-muted">
+      <div className="mt-1 flex items-center gap-1 text-[12px] text-muted">
         <span>{total} {label}</span><span className="ml-auto">Less</span>
         {STEPS.map((c, i) => <span key={i} className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: c }} />)}<span>More</span>
       </div>

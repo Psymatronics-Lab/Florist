@@ -60,14 +60,21 @@ honest it is about your compute, time and skills, the more doable its suggestion
 ## Ideate
 
 Ideate is the landing page: a chat for ideas that aren't projects yet. Drag anything from the Feed
-or Compost onto the chat to put it in context. The small icons under the message box switch on
-extra help for a message:
+or Compost onto the chat to put it in context. The plus button in the message box attaches files
+(PDFs, text and code) and picks a skill for your next message:
 
-- **Literature** searches papers and repos for what you asked.
-- **Novelty check** looks for the closest existing work.
-- **Compost** and **Feed recall** bring back things you saved.
+- **Deep research** runs the full research loop.
+- **Review literature** searches and writes a cited review, without the rest of the loop.
+- **Check novelty** finds the closest existing work and what is left to do.
+- **Find feed sources** suggests new sources, tests them, and lets you add them in one click.
+- **Compost ideas** finds connections in your compost and proposes ideas.
+- **Feed ideas** reads part of your feed and proposes ideas. Say what to focus on, or it reads the newest items.
+- **Adaptive polish** judges what stage the idea is at and does the work that stage needs.
 
-When an idea clicks, press **Turn into a seed**. The chat and everything in its context come along.
+Proposed ideas wait in the Greenhouse for you to plant or ignore.
+
+When an idea clicks, press **Turn into a seed** and choose what kind of seed it is. The chat and
+everything in its context come along.
 
 ## Grow a seed
 
@@ -119,14 +126,18 @@ uv run florist pick speculative --out ~/projects
 
 ## The feed and compost
 
-The **Feed** pulls from alphaXiv, Hugging Face papers, arXiv, GitHub, Hacker News, Reddit,
-YouTube, Bluesky, Mastodon, any RSS feed, newsletters and a notes folder — add them in
-**Settings → Feed**. Each item gets a one-line reason it matters to you. Anything you don't care
-about, dismiss: Florist learns from it.
+The **Feed** pulls from arXiv, alphaXiv, bioRxiv, medRxiv, conference proceedings, GitHub and
+Hugging Face (popular or new), Hacker News, Reddit, X, Bluesky, Mastodon, YouTube, Medium, Hackster.io
+and any RSS feed. Add them in **Settings → Feed**, where a set of robotics and machine-learning
+sources is ready to switch on. X has no free feed, so it needs a token from an X API plan.
 
-**Compost** is where interesting things wait until you're ready. Edit any row in place, look at the
-graph view to see your recurring themes, and press **Connections** to let Florist propose seeds
-that combine things you saved weeks apart.
+The newest items come first. **Viewed** collects what you have opened, and the funnel filters by date,
+category and source. Each item gets a one-line reason it matters to you. Anything you don't care about,
+dismiss: Florist learns from it.
+
+**Compost** is where interesting things wait until you're ready. Edit any row in place and look at the
+graph view to see your recurring themes. To have Florist propose seeds that combine things you saved
+weeks apart, use the **Compost ideas** skill in a chat.
 
 Feeling stuck? **I'm feeling lucky** on the Feed picks something good and opens an Ideate chat about it.
 

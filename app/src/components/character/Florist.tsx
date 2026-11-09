@@ -17,6 +17,7 @@ const FIDGETS = ["glance", "hat", "hop", "wave", "stretch"] as const;
 type Fidget = (typeof FIDGETS)[number] | "";
 
 const SIDE_MOODS: Mood[] = ["working"];
+const HAND_DROP = 6;
 
 export default function FloristCharacter({ mood = "idle", size = 120, track = true, className, title }: {
   mood?: Mood; size?: number; track?: boolean; className?: string; title?: string;
@@ -97,18 +98,18 @@ export default function FloristCharacter({ mood = "idle", size = 120, track = tr
           <ellipse className="flc-shadow" cx="86" cy="183" rx="38" ry="4" />
 
           {/* hair (behind everything) */}
-          <g transform="translate(0 8)"><g className="flc-px flc-px-hair"><g className="flc-pose-hair"><g className="flc-hair">
+          <g transform="translate(0 16)"><g className="flc-px flc-px-hair"><g className="flc-pose-hair"><g className="flc-hair">
             <path d="M63 54 Q60 38 85 37 Q109 38 109 55 L113 121 Q113 130 104 130 H63 Q54 130 55 121 Z" className="c-dark" />
           </g></g></g></g>
 
           {/* body */}
           <g className="flc-px flc-px-body"><g className="flc-body">
-            <path d="M73 112 Q73 107 78 107 H93 Q98 107 98 112 C100 140 110 160 122 172 Q125 181 116 181 H55 Q46 181 49 172 C61 160 71 140 73 112 Z" className="c-mid" />
-            <path d="M74 120 Q86 124 97 120" className="flc-seam" />
+            <path d="M73 120 Q73 115 78 115 H93 Q98 115 98 120 C100 146 110 162 122 172 Q125 181 116 181 H55 Q46 181 49 172 C61 162 71 146 73 120 Z" className="c-mid" />
+            <path d="M74 128 Q86 132 97 128" className="flc-seam" />
           </g></g>
 
           {/* head */}
-          <g transform="translate(0 8)"><g className="flc-px flc-px-head"><g className="flc-pose-head"><g className="flc-head">
+          <g transform="translate(0 16)"><g className="flc-px flc-px-head"><g className="flc-pose-head"><g className="flc-head">
             <g className="flc-face-shift">
               <circle cx="86" cy="64" r="24.5" className="c-mid" />
               <g className="flc-px flc-px-eyes"><g className="flc-look"><g className="flc-eyes">
@@ -132,21 +133,25 @@ export default function FloristCharacter({ mood = "idle", size = 120, track = tr
 
           {/* props that live in the scene */}
           {mood === "working" && <WateringScene />}
-          {mood === "reading" && <Book />}
-          {mood === "thinking" && <ThoughtBubble />}
+          <g transform={`translate(0 ${HAND_DROP})`}>{mood === "reading" && <Book />}</g>
+          <g transform="translate(0 8)">
+            {mood === "thinking" && <ThoughtBubble />}
+            {mood === "sleep" && <Zzz />}
+            {mood === "confused" && <Confused />}
+            {mood === "surprised" && <Exclaim />}
+          </g>
           {mood === "happy" && <Sparkles />}
-          {mood === "sleep" && <Zzz />}
-          {mood === "confused" && <Confused />}
-          {mood === "surprised" && <Exclaim />}
 
           {/* hands (in front) */}
-          <g className="flc-px flc-px-hands"><g className="flc-pose-hand-l"><g className="flc-hand-l">
-            <circle cx="40" cy="141" r="9.6" className="c-mid" />
-          </g></g></g>
-          <g className="flc-px flc-px-hands"><g className="flc-pose-hand-r"><g className="flc-hand-r">
-            {mood === "searching" && <Magnifier />}
-            <circle cx="131" cy="141" r="9.6" className="c-mid" />
-          </g></g></g>
+          <g transform={`translate(0 ${HAND_DROP})`}>
+            <g className="flc-px flc-px-hands"><g className="flc-pose-hand-l"><g className="flc-hand-l">
+              <circle cx="40" cy="141" r="9.6" className="c-mid" />
+            </g></g></g>
+            <g className="flc-px flc-px-hands"><g className="flc-pose-hand-r"><g className="flc-hand-r">
+              {mood === "searching" && <Magnifier />}
+              <circle cx="131" cy="141" r="9.6" className="c-mid" />
+            </g></g></g>
+          </g>
         </g>
       </g>
     </svg>
@@ -189,7 +194,7 @@ function WateringScene() {
         <path d="M172 171 C163 171 160 165 161 161 C167 161 172 165 172 171 Z" className="c-mid" />
         <path d="M172 166 C181 166 184 160 183 156 C177 156 172 160 172 166 Z" className="c-light" />
       </g>
-      <g className="flc-can">
+      <g transform={`translate(0 ${HAND_DROP})`}><g className="flc-can">
         <path d="M138 110 H158 L155 130 H141 Z" className="c-dark" />
         <path d="M158 115 L172 106" className="flc-spout" />
         <rect x="169" y="102.5" width="7" height="5" rx="1.5" transform="rotate(-34 172 105)" className="c-dark" />
@@ -197,7 +202,7 @@ function WateringScene() {
         <circle className="flc-drop d1" cx="176" cy="112" r="1.8" />
         <circle className="flc-drop d2" cx="174" cy="114" r="1.6" />
         <circle className="flc-drop d3" cx="178" cy="113" r="1.5" />
-      </g>
+      </g></g>
     </g>
   );
 }

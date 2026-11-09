@@ -43,11 +43,11 @@ export default function ModelPicker({ model, effort, onChange, compact }: {
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen((v) => !v)} title="Model and effort"
-        className={cx("flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11.5px] transition-colors",
+        className={cx("flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[12.5px] transition-colors",
           open ? "border-leaf/60 bg-leaf-soft/50 text-text" : "border-border-soft text-subtext hover:border-border hover:text-text")}>
         <Logo id={modelLogo(active || "mock")} size={13} />
         {!compact && <span className="max-w-[130px] truncate font-medium">{modelLabel(active).split(" · ").slice(-1)[0]}</span>}
-        {shownEffort && !compact && <span className="rounded-full bg-surface px-1.5 text-[10.5px] text-subtext">{EFFORT_LABEL[shownEffort] ?? shownEffort}</span>}
+        {shownEffort && !compact && <span className="rounded-full bg-surface px-1.5 text-[11.5px] text-subtext">{EFFORT_LABEL[shownEffort] ?? shownEffort}</span>}
         <ChevronDown size={11} className={cx("transition-transform", open && "rotate-180")} />
       </button>
       {open && (
@@ -57,7 +57,7 @@ export default function ModelPicker({ model, effort, onChange, compact }: {
               title="Default" note={defaultModel ? `${modelLabel(defaultModel)} — set in Settings → Models` : "Your Ideate model"} />
             {(catalog.data ?? []).map((g) => (
               <div key={g.id} className="mt-1">
-                <div className="flex items-center gap-1.5 px-2.5 pb-0.5 pt-1.5 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-muted">
+                <div className="flex items-center gap-1.5 px-2.5 pb-0.5 pt-1.5 text-[11.5px] font-semibold uppercase tracking-[0.07em] text-muted">
                   {g.logo && <Logo id={g.logo} size={11} />}{g.name}
                 </div>
                 {g.models.map((m) => (
@@ -68,19 +68,19 @@ export default function ModelPicker({ model, effort, onChange, compact }: {
             ))}
           </div>
           <div className="mt-1.5 rounded-xl bg-surface p-2">
-            <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[11.5px] font-medium"><Gauge size={12} className="text-subtext" />Effort</div>
+            <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[12.5px] font-medium"><Gauge size={12} className="text-subtext" />Effort</div>
             {efforts.length ? (
               <div className="flex flex-wrap gap-1">
                 {["", ...efforts].map((e) => (
                   <button key={e || "auto"} onClick={() => onChange(model, e)}
-                    className={cx("rounded-full px-2.5 py-1 text-[11.5px] transition-colors",
+                    className={cx("rounded-full px-2.5 py-1 text-[12.5px] transition-colors",
                       effort === e ? "bg-leaf text-white shadow-card" : "bg-base text-subtext hover:text-text")}>
                     {e ? EFFORT_LABEL[e] ?? e : "Auto"}
                   </button>
                 ))}
               </div>
-            ) : <div className="px-0.5 text-[11.5px] text-muted">This model picks its own depth.</div>}
-            {efforts.length > 0 && <div className="mt-1.5 px-0.5 text-[10.5px] text-muted">Higher effort thinks longer — slower, more thorough.</div>}
+            ) : <div className="px-0.5 text-[12.5px] text-muted">This model picks its own depth.</div>}
+            {efforts.length > 0 && <div className="mt-1.5 px-0.5 text-[11.5px] text-muted">Higher effort thinks longer — slower, more thorough.</div>}
           </div>
         </div>
       )}
@@ -93,8 +93,8 @@ function Row({ selected, onClick, icon, title, note }: { selected: boolean; onCl
     <button onClick={onClick} className={cx("flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors", selected ? "bg-leaf-soft/60" : "hover:bg-hover")}>
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface">{icon}</span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[12.5px] font-medium">{title}</span>
-        {note && <span className="block truncate text-[11px] text-muted">{note}</span>}
+        <span className="block truncate text-[13.5px] font-medium">{title}</span>
+        {note && <span className="block truncate text-[12px] text-muted">{note}</span>}
       </span>
       {selected && <Check size={14} className="shrink-0 text-leaf" />}
     </button>

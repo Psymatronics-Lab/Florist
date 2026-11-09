@@ -27,7 +27,7 @@ def create_seed(prompt: str, tier: str = "personal", title: str = "", technologi
                 constraints: dict[str, Any] | None = None, priority: int = 3, compost_ids: list[str] | None = None,
                 feed_ids: list[str] | None = None, related_papers: list[str] | None = None,
                 origin: str = "manual", state: str = "dormant", ask_followups: bool = False,
-                passive: bool = False) -> tuple[Seed, list[str]]:
+                passive: bool = False, attachment_ids: list[str] | None = None) -> tuple[Seed, list[str]]:
     """Plant a seed. With ``ask_followups`` Florist asks at most two questions (skill florist-followups)."""
     questions: list[str] = []
     techs = list(technologies or [])
@@ -50,7 +50,8 @@ def create_seed(prompt: str, tier: str = "personal", title: str = "", technologi
     seed = Seed(
         id=db.new_id("sd"), slug=db.unique_slug(title), title=title, prompt=prompt, tier=tier_val,
         state=SeedState(state), priority=priority, technologies=techs, related_papers=related_papers or [],
-        compost_ids=compost_ids or [], feed_ids=feed_ids or [], constraints=Constraints(**(constraints or {})),
+        compost_ids=compost_ids or [], feed_ids=feed_ids or [], attachment_ids=attachment_ids or [],
+        constraints=Constraints(**(constraints or {})),
         followups=[FollowUp(question=q) for q in questions], origin=origin, passive=passive,  # type: ignore[arg-type]
     )
     db.put_seed(seed)
@@ -188,15 +189,34 @@ def chat_history(seed_id: str, limit: int = 60) -> list[dict[str, Any]]:
 
 def chat(seed_ref: str, message: str, model: str | None = None, skills_on: list[str] | None = None,
          ctx_items: list[dict[str, str]] | None = None, effort: str | None = None) -> dict[str, Any]:
+    from . import composer
     from . import context as ctxmod
 
     seed = _seed(seed_ref)
     for it in ctx_items or []:
         attach_context(seed.id, it)
     seed = _seed(seed.id)
-    skills_on = [x for x in (skills_on or []) if x in ctxmod.COMPOSER_SKILLS]
+    skill = composer.pick(skills_on)
     db.ex("INSERT INTO chat(seed_id, role, content, actions, created) VALUES (?,?,?,?,?)",
-          (seed.id, "user", message, json.dumps([{"type": "skills", "skills": skills_on}] if skills_on else []), now_iso()))
+          (seed.id, "user", message or composer.label(skill),
+           json.dumps([{"type": "skills", "skills": [skill]}] if skill else []), now_iso()))
+    attached = ctxmod.resolve([{"kind": "compost", "id": i} for i in seed.compost_ids][-8:]
+                              + [{"kind": "feed", "id": i} for i in seed.feed_ids][-8:]
+                              + [{"kind": "file", "id": i} for i in seed.attachment_ids][-8:])
+    if skill:
+        if skill == composer.LOOP_SKILL:
+            if message:
+                steer(seed.id, message)
+            out = {"reply": "Starting a research round on this seed.",
+                   "actions": [{"type": "run_round", "target": "", "note": message, "ok": True}]}
+        else:
+            out = composer.run(skill, composer.Scope(
+                message=message, title=seed.title, seed=seed, context_items=attached, model=model, effort=effort,
+                conversation=[{"role": m["role"], "content": m["content"]} for m in chat_history(seed.id, 16)
+                              if m["role"] in ("user", "assistant")]))
+        db.ex("INSERT INTO chat(seed_id, role, content, actions, created) VALUES (?,?,?,?,?)",
+              (seed.id, "assistant", out["reply"], json.dumps(out["actions"]), now_iso()))
+        return out
     flower = db.latest_flower(seed.id)
     dirs = db.list_nodes(seed.id, "direction")
     context = {
@@ -204,9 +224,7 @@ def chat(seed_ref: str, message: str, model: str | None = None, skills_on: list[
         "flower": flower.model_dump(exclude={"visuals", "schema_version"}) if flower else None,
         "directions": [loop._dir_brief(d) for d in dirs],
         "recent_sources": [loop._src_brief(s) for s in loop._kept_sources(seed.id, 12)],
-        "attached": ctxmod.resolve([{"kind": "compost", "id": i} for i in seed.compost_ids][-8:]
-                                   + [{"kind": "feed", "id": i} for i in seed.feed_ids][-8:]),
-        "retrieved": ctxmod.run_skills(skills_on, message, seed.title) if skills_on else {},
+        "attached": attached,
         "conversation": [{"role": m["role"], "content": m["content"]} for m in chat_history(seed.id, 16)],
     }
     reply = gateway.complete(
@@ -230,6 +248,8 @@ def attach_context(seed_id: str, item: dict[str, str]) -> Seed:
     elif kind == "feed" and ref not in seed.feed_ids and (f := db.get_feed_item(ref)):
         seed.feed_ids.append(ref)
         preferences.record("attach", "feed", ref, preferences.features_of(f))
+    elif kind == "file" and ref not in seed.attachment_ids and db.get_attachment(ref):
+        seed.attachment_ids.append(ref)
     else:
         return seed
     db.put_seed(seed)
@@ -243,6 +263,8 @@ def detach_context(seed_id: str, kind: str, ref: str) -> Seed:
         seed.compost_ids = [x for x in seed.compost_ids if x != ref]
     elif kind == "feed":
         seed.feed_ids = [x for x in seed.feed_ids if x != ref]
+    elif kind == "file":
+        seed.attachment_ids = [x for x in seed.attachment_ids if x != ref]
     return db.put_seed(seed)
 
 

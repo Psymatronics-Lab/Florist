@@ -25,7 +25,7 @@ export default function Mascot({ mood = "idle", size = 96, label, className, for
   return (
     <div className={cx("inline-flex flex-col items-center", className)}>
       {on ? <FloristCharacter mood={mood} size={size} /> : <Fallback mood={mood} size={size} />}
-      {label && <div className="mt-1 max-w-[220px] text-center text-[12.5px] text-subtext">{label}</div>}
+      {label && <div className="mt-1 max-w-[220px] text-center text-[13.5px] text-subtext">{label}</div>}
     </div>
   );
 }

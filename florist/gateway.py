@@ -448,6 +448,8 @@ def _fake(s: dict, hints: dict, rnd: random.Random, name: str, depth: int, index
             ]
         elif name in ("compost_ids",) and hints.get("compost"):
             return hints["compost"][: max(2, lo)]
+        elif name == "feed_ids" and hints.get("feed"):
+            return hints["feed"][: max(1, lo)]
         elif name in ("related_seed_ids", "inspired_by", "parents"):
             return []
         elif name == "steps":

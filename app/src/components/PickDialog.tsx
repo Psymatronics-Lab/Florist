@@ -35,13 +35,13 @@ export default function PickDialog({ seedId, open, onClose }: { seedId: string; 
         : <><Button onClick={close}>Cancel</Button><Button kind="primary" busy={pick.isPending} disabled={!chosen.length} onClick={() => pick.mutate()}>Pick</Button></>}>
       {!result && !pick.isPending && (
         <>
-          <p className="mt-0 text-[13px] text-subtext">Florist writes one folder another person or framework can pick up without redoing the exploration: the brief, machine-readable flower, sources, rejected directions, visuals and smoke checks — plus a rendering for each destination.</p>
+          <p className="mt-0 text-[14px] text-subtext">Florist writes one folder another person or framework can pick up without redoing the exploration: the brief, machine-readable flower, sources, rejected directions, visuals and smoke checks — plus a rendering for each destination.</p>
           <div className="grid gap-2">
             {adapters.data?.map((a) => (
               <label key={a.name} className={cx("flex cursor-pointer items-start gap-3 rounded-lg border p-3", chosen.includes(a.name) ? "border-leaf bg-leaf-soft/30" : "border-border-soft")}>
                 <input type="checkbox" className="mt-1 accent-[var(--leaf)]" checked={chosen.includes(a.name)}
                   onChange={(e) => setChosen(e.target.checked ? [...chosen, a.name] : chosen.filter((x) => x !== a.name))} />
-                <div><div className="text-[13.5px] font-semibold">{a.title}</div><div className="text-[12px] text-subtext">{a.description}</div></div>
+                <div><div className="text-[14.5px] font-semibold">{a.title}</div><div className="text-[13px] text-subtext">{a.description}</div></div>
               </label>
             ))}
           </div>
@@ -51,16 +51,16 @@ export default function PickDialog({ seedId, open, onClose }: { seedId: string; 
       {result && (
         <div className="flex h-[60vh] gap-4">
           <div className="w-[260px] shrink-0 overflow-auto">
-            <div className="mb-2 break-all text-[11px] text-muted">{result.path}</div>
+            <div className="mb-2 break-all text-[12px] text-muted">{result.path}</div>
             {result.files.filter((f) => !f.endsWith(".json") || f === "flower.json").map((f) => (
-              <button key={f} onClick={() => setFile(f)} className={cx("flex w-full items-center gap-1.5 truncate rounded-md px-2 py-1 text-left text-[12.5px]", file === f ? "bg-selected font-medium" : "hover:bg-hover")}>
+              <button key={f} onClick={() => setFile(f)} className={cx("flex w-full items-center gap-1.5 truncate rounded-md px-2 py-1 text-left text-[13.5px]", file === f ? "bg-selected font-medium" : "hover:bg-hover")}>
                 {f.endsWith(".svg") ? <ImageIcon size={12} className="shrink-0 text-purple" /> : <FileText size={12} className="shrink-0 text-subtext" />}<span className="truncate">{f}</span>
               </button>
             ))}
           </div>
           <div className="min-w-0 flex-1 overflow-auto rounded-lg border border-border-soft p-4">
             {file.endsWith(".svg") ? <img src={url(file)} className="paper max-w-full" /> :
-              file.endsWith(".md") ? <Md>{content}</Md> : <pre className="whitespace-pre-wrap font-mono text-[12px]">{content}</pre>}
+              file.endsWith(".md") ? <Md>{content}</Md> : <pre className="whitespace-pre-wrap font-mono text-[13px]">{content}</pre>}
           </div>
         </div>
       )}

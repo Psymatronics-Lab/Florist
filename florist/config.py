@@ -52,6 +52,12 @@ STEP_ROLES: dict[str, str] = {
     "ideate": "ideate",
     "seed_from_chat": "strong",
     "profile_sync": "fast",
+    "literature_plan": "fast",
+    "literature_review": "strong",
+    "novelty": "strong",
+    "find_sources": "ideate",
+    "feed_ideas": "strong",
+    "polish": "ideate",
 }
 
 KEY_ENV = {
@@ -65,6 +71,7 @@ KEY_ENV = {
     "github": "GITHUB_TOKEN",
     "openalex": "OPENALEX_API_KEY",
     "semantic_scholar": "S2_API_KEY",
+    "twitter": "X_BEARER_TOKEN",
 }
 
 

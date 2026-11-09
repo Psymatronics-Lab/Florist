@@ -24,12 +24,12 @@ function FloristNode({ data }: NodeProps) {
       <Handle type="target" position={Position.Left} className="!h-1.5 !w-1.5 !border-0 !bg-border" />
       <div className="flex items-center gap-1.5">
         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: KIND_COLOR[n.kind] }} />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-subtext">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-subtext">
           {n.kind === "source" ? n.data.kind ?? "source" : n.kind}{pruned ? " · pruned" : top ? " · top" : ""}
         </span>
-        {n.score != null && <span className="ml-auto text-[10.5px] tabular-nums text-muted">{n.score.toFixed(2)}</span>}
+        {n.score != null && <span className="ml-auto text-[11.5px] tabular-nums text-muted">{n.score.toFixed(2)}</span>}
       </div>
-      <div className={cx("mt-0.5 leading-snug", compact ? "line-clamp-2 text-[11.5px]" : "line-clamp-3 text-[12.5px] font-medium")}>{n.title}</div>
+      <div className={cx("mt-0.5 leading-snug", compact ? "line-clamp-2 text-[12.5px]" : "line-clamp-3 text-[13.5px] font-medium")}>{n.title}</div>
       <Handle type="source" position={Position.Right} className="!h-1.5 !w-1.5 !border-0 !bg-border" />
     </div>
   );
@@ -102,7 +102,7 @@ export default function GraphView({ graph }: { graph: Graph }) {
         <Background gap={22} size={1} color="var(--border-soft)" />
         <Controls showInteractive={false} position="bottom-left" />
       </ReactFlow>
-      <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2 rounded-lg border border-border-soft bg-base/95 px-3 py-1.5 text-[11.5px] shadow-card">
+      <div className="absolute left-3 top-3 flex flex-wrap items-center gap-2 rounded-lg border border-border-soft bg-base/95 px-3 py-1.5 text-[12.5px] shadow-card">
         {Object.entries(counts).map(([k, v]) => (
           <span key={k} className="flex items-center gap-1 text-subtext"><span className="h-2 w-2 rounded-full" style={{ background: KIND_COLOR[k] }} />{k} {v}</span>
         ))}
@@ -129,17 +129,17 @@ export function NodePanel({ node, onClose, titles }: { node: GraphNode; onClose:
     <div className="absolute bottom-3 right-3 top-3 z-10 flex w-[360px] flex-col overflow-hidden rounded-xl border border-border-soft bg-base shadow-pop">
       <div className="flex items-start justify-between gap-2 border-b border-border-soft px-4 py-3">
         <div>
-          <div className="text-[10.5px] font-semibold uppercase tracking-[0.06em]" style={{ color: KIND_COLOR[node.kind] }}>
+          <div className="text-[11.5px] font-semibold uppercase tracking-[0.06em]" style={{ color: KIND_COLOR[node.kind] }}>
             {node.kind}{node.status !== "active" ? ` · ${node.status}` : ""} · round {node.round}
           </div>
-          <div className="mt-0.5 text-[14px] font-semibold leading-snug">{node.title}</div>
+          <div className="mt-0.5 text-[15px] font-semibold leading-snug">{node.title}</div>
         </div>
         <IconButton title="Close" onClick={onClose}><X size={14} /></IconButton>
       </div>
-      <div className="flex-1 overflow-auto px-4 py-3 text-[13px]">
-        {node.url && <a href={node.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-1 truncate text-[12px] text-leaf-ink hover:underline"><ExternalLink size={11} />{node.url}</a>}
+      <div className="flex-1 overflow-auto px-4 py-3 text-[14px]">
+        {node.url && <a href={node.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-1 truncate text-[13px] text-leaf-ink hover:underline"><ExternalLink size={11} />{node.url}</a>}
         {node.kind === "source" && (
-          <div className="mb-2 flex flex-wrap gap-1 text-[11.5px] text-subtext">
+          <div className="mb-2 flex flex-wrap gap-1 text-[12.5px] text-subtext">
             {node.data.year && <Chip>{node.data.year}</Chip>}{node.data.venue && <Chip>{node.data.venue}</Chip>}
             {node.data.tool && <Chip>via {node.data.tool}</Chip>}{node.data.citations != null && <Chip>{node.data.citations} cites</Chip>}
             {node.data.stars != null && <Chip>★ {node.data.stars}</Chip>}
@@ -147,9 +147,9 @@ export function NodePanel({ node, onClose, titles }: { node: GraphNode; onClose:
         )}
         {node.data.description && <p className="mt-0">{node.data.description}</p>}
         {!node.data.description && node.summary && <p className="mt-0 text-subtext">{node.summary}</p>}
-        {node.kind === "source" && node.data.abstract && <p className="text-[12px] text-subtext">{String(node.data.abstract).slice(0, 700)}</p>}
-        {node.reason && <div className={cx("mb-2 rounded-md px-2.5 py-1.5 text-[12.5px]", node.status === "pruned" ? "bg-surface text-subtext" : "bg-leaf-soft text-leaf-ink")}>{node.status === "pruned" ? "Pruned: " : ""}{h(node.reason)}</div>}
-        {node.data.deepen && <div className="mb-2 text-[12.5px]"><b>Next round digs into:</b> {node.data.deepen}</div>}
+        {node.kind === "source" && node.data.abstract && <p className="text-[13px] text-subtext">{String(node.data.abstract).slice(0, 700)}</p>}
+        {node.reason && <div className={cx("mb-2 rounded-md px-2.5 py-1.5 text-[13.5px]", node.status === "pruned" ? "bg-surface text-subtext" : "bg-leaf-soft text-leaf-ink")}>{node.status === "pruned" ? "Pruned: " : ""}{h(node.reason)}</div>}
+        {node.data.deepen && <div className="mb-2 text-[13.5px]"><b>Next round digs into:</b> {node.data.deepen}</div>}
         {s && (
           <div className="mb-3 space-y-1.5">
             <Meter label="Novelty" value={s.novelty} color="var(--blue)" />
@@ -157,7 +157,7 @@ export function NodePanel({ node, onClose, titles }: { node: GraphNode; onClose:
             <Meter label="Room" value={1 - s.crowdedness} color="var(--amber)" />
             <Meter label="Interest" value={s.interest} color="var(--purple)" />
             <Meter label="Overall" value={s.overall} color="var(--leaf-dark)" />
-            {s.interest_learned != null && <div className="text-[11px] text-muted">interest = model {Number(s.interest_model).toFixed(2)} blended with your learned taste {Number(s.interest_learned).toFixed(2)}</div>}
+            {s.interest_learned != null && <div className="text-[12px] text-muted">interest = model {Number(s.interest_model).toFixed(2)} blended with your learned taste {Number(s.interest_learned).toFixed(2)}</div>}
           </div>
         )}
         {chk?.gap && <p><b>Gap:</b> {h(chk.gap)}</p>}
@@ -168,9 +168,9 @@ export function NodePanel({ node, onClose, titles }: { node: GraphNode; onClose:
         )}
         {chk?.feasibility_notes && <p><b>Feasibility:</b> {chk.feasibility_notes}</p>}
         {chk?.risks?.length > 0 && <p><b>Risks:</b> {chk.risks.join("; ")}</p>}
-        {node.data.crowd && node.data.crowd.total != null && <p className="text-[12px] text-subtext">Crowdedness: {node.data.crowd.total} works match, {node.data.crowd.recent} since {node.data.crowd.since}.</p>}
+        {node.data.crowd && node.data.crowd.total != null && <p className="text-[13px] text-subtext">Crowdedness: {node.data.crowd.total} works match, {node.data.crowd.recent} since {node.data.crowd.since}.</p>}
         {node.kind === "finding" && node.data.evidence && (
-          <ul className="pl-4">{node.data.evidence.map((e: any) => <li key={e.ref} className="text-[12px] text-subtext">{e.ref}: “{e.quote}”</li>)}</ul>
+          <ul className="pl-4">{node.data.evidence.map((e: any) => <li key={e.ref} className="text-[13px] text-subtext">{e.ref}: “{e.quote}”</li>)}</ul>
         )}
       </div>
       {node.kind === "direction" && (

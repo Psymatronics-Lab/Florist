@@ -27,8 +27,8 @@ export default function Stats() {
       <div className="mb-6 grid grid-cols-6 gap-3">
         {tiles.map(([k, v]) => (
           <div key={k} className="rounded-xl border border-border-soft px-4 py-3">
-            <div className="text-[11.5px] text-subtext">{k}</div>
-            <div className="mt-0.5 text-[22px] font-semibold tabular-nums tracking-[-0.01em]">{v}</div>
+            <div className="text-[12.5px] text-subtext">{k}</div>
+            <div className="mt-0.5 text-[24px] font-semibold tabular-nums tracking-[-0.01em]">{v}</div>
           </div>
         ))}
       </div>
@@ -94,7 +94,7 @@ function Bars({ series, metric }: { series: any[]; metric: Metric }) {
           {new Date(d.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}</text> : null))}
       </svg>
       {hover != null && (
-        <div className="pointer-events-none absolute rounded-md bg-text px-2 py-1 text-[11.5px] text-base shadow-pop"
+        <div className="pointer-events-none absolute rounded-md bg-text px-2 py-1 text-[12.5px] text-base shadow-pop"
           style={{ left: Math.min(padL + hover * bw, w - 150), top: Math.max(0, y(vals[hover]) - 34) }}>
           <b>{FMT[metric](vals[hover])}</b> · {new Date(series[hover].date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
           {series[hover].failed ? <span> · {series[hover].failed} failed</span> : null}
@@ -116,13 +116,13 @@ function niceMax(v: number) {
 
 function Breakdown({ rows, fmt }: { rows: { key: string; label: string; icon?: React.ReactNode; v: number; sub?: string }[]; fmt: (v: number) => string }) {
   const max = Math.max(...rows.map((r) => r.v), 1e-9);
-  if (!rows.length) return <div className="text-[12.5px] text-muted">No data yet.</div>;
+  if (!rows.length) return <div className="text-[13.5px] text-muted">No data yet.</div>;
   return (
     <div className="flex flex-col gap-2">
       {rows.slice(0, 8).map((r) => (
-        <div key={r.key} className="text-[12.5px]" title={`${r.label}: ${fmt(r.v)}${r.sub ? ` · ${r.sub}` : ""}`}>
+        <div key={r.key} className="text-[13.5px]" title={`${r.label}: ${fmt(r.v)}${r.sub ? ` · ${r.sub}` : ""}`}>
           <div className="mb-0.5 flex items-center gap-1.5">{r.icon}<span className="min-w-0 flex-1 truncate">{r.label}</span>
-            <span className="tabular-nums text-text">{fmt(r.v)}</span>{r.sub && <span className="w-20 text-right text-[11px] text-muted">{r.sub}</span>}</div>
+            <span className="tabular-nums text-text">{fmt(r.v)}</span>{r.sub && <span className="w-20 text-right text-[12px] text-muted">{r.sub}</span>}</div>
           <div className="h-1.5 rounded-full bg-surface"><div className="h-full rounded-full bg-leaf" style={{ width: `${Math.max(2, (r.v / max) * 100)}%` }} /></div>
         </div>
       ))}

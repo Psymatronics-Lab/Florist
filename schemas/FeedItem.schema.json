@@ -26,7 +26,7 @@
     },
     "source_kind": {
       "default": "manual",
-      "description": "rss | youtube | arxiv | alphaxiv | github | email | hn | manual",
+      "description": "the FeedSource kind, or manual for saved links",
       "title": "Source Kind",
       "type": "string"
     },
@@ -116,6 +116,12 @@
     "status": {
       "$ref": "#/$defs/FeedStatus",
       "default": "new"
+    },
+    "viewed_at": {
+      "default": "",
+      "description": "when the user first opened this item; empty = not viewed",
+      "title": "Viewed At",
+      "type": "string"
     },
     "created": {
       "title": "Created",

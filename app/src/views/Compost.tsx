@@ -2,12 +2,13 @@ import { useMemo, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Background, Controls, Handle, Node, NodeProps, Position, ReactFlow } from "@xyflow/react";
-import { ExternalLink, GripVertical, Lightbulb, MessageCircle, Plus, Search, Sprout, Table2, Trash2, Waypoints } from "lucide-react";
-import { api, Cluster, CompostItem, Seed } from "../api";
+import { ExternalLink, GripVertical, MessageCircle, Plus, Search, Sprout, Table2, Trash2, Waypoints } from "lucide-react";
+import { api, Cluster, CompostItem, Seed, Tier } from "../api";
 import { go } from "../App";
 import Mascot from "../components/character/Mascot";
 import { Page, PageTitle } from "../components/Layout";
 import { Logo } from "../components/Logo";
+import SeedTypeDialog from "../components/SeedTypeDialog";
 import { Button, Chip, cx, Field, Modal, Segmented, toast } from "../components/ui";
 
 export default function CompostView() {
@@ -19,14 +20,11 @@ export default function CompostView() {
   const [sel, setSel] = useState<string | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
-  const mine = useMutation({
-    mutationFn: () => api.post<{ candidates: Seed[] }>("/api/compost/mine"),
-    onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["seeds"] }); toast(r.candidates.length ? `${r.candidates.length} candidate seeds — see the Greenhouse` : "No strong connections yet"); },
-    onError: (e: Error) => toast(e.message, "err"),
-  });
+  const [seedIds, setSeedIds] = useState<string[] | null>(null);
   const seedFrom = useMutation({
-    mutationFn: () => api.post<Seed>("/api/compost/seed", { ids: [...picked] }),
-    onSuccess: (s) => { setPicked(new Set()); qc.invalidateQueries({ queryKey: ["seeds"] }); go(`/greenhouse/${s.id}`); },
+    mutationFn: (tier: Tier | "") => api.post<Seed>("/api/compost/seed", { ids: seedIds, tier: tier || "exploration" }),
+    onSuccess: (s) => { setPicked(new Set()); setSeedIds(null); qc.invalidateQueries({ queryKey: ["seeds"] }); go(`/greenhouse/${s.id}`); },
+    onError: (e: Error) => toast(e.message, "err"),
   });
   const rows = useMemo(() => {
     const ql = q.toLowerCase();
@@ -41,24 +39,23 @@ export default function CompostView() {
         <PageTitle sub={`${items.data?.length ?? 0} items`}>Compost</PageTitle>
         <div className="relative ml-4 max-w-[340px] flex-1">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search compost" className="h-8 w-full pl-8 text-[13px]" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search compost" className="h-8 w-full pl-8 text-[14px]" />
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Segmented value={view} onChange={setView} options={[{ value: "table", label: <Table2 size={13} /> }, { value: "graph", label: <Waypoints size={13} /> }]} />
           <Button size="sm" onClick={() => setAdding(true)}><Plus size={13} />Add</Button>
-          <Button size="sm" title="Florist proposes seeds connecting items" busy={mine.isPending} onClick={() => mine.mutate()}><Lightbulb size={13} />Connections</Button>
         </div>
       </>}
       bodyClass="overflow-hidden relative"
-      inspector={selected ? <CompostInspector item={selected} seeds={seeds.data ?? []} key={selected.id} onClose={() => setSel(null)} /> : (
-        <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-[12.5px] text-muted"><Mascot mood="idle" size={72} />Select an item to see its details</div>
+      inspector={selected ? <CompostInspector item={selected} seeds={seeds.data ?? []} key={selected.id} onClose={() => setSel(null)} onSeed={() => setSeedIds([selected.id])} /> : (
+        <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-[13.5px] text-muted"><Mascot mood="idle" size={72} />Select an item to see its details</div>
       )}>
       {items.data?.length === 0 ? (
-        <div className="flex h-full flex-col items-center justify-center gap-2 text-[13px] text-subtext"><Mascot mood="sleep" size={96} />Compost is empty — drag feed items onto “Compost”, or add a link.</div>
+        <div className="flex h-full flex-col items-center justify-center gap-2 text-[14px] text-subtext"><Mascot mood="sleep" size={96} />Compost is empty — drag feed items onto “Compost”, or add a link.</div>
       ) : view === "table" ? (
         <div className="h-full overflow-auto">
-          <table className="w-full border-collapse text-[13px]">
-            <thead className="sticky top-0 z-10 bg-base text-left text-[11.5px] text-subtext">
+          <table className="w-full border-collapse text-[14px]">
+            <thead className="sticky top-0 z-10 bg-base text-left text-[12.5px] text-subtext">
               <tr className="border-b border-border-soft"><th className="w-14" /><th className="px-2 py-2 font-medium">Title</th><th className="px-2 py-2 font-medium">Tags</th>
                 <th className="px-2 py-2 font-medium">Notes</th><th className="w-28 px-2 py-2 font-medium">Theme</th><th className="w-24 px-2 py-2 font-medium">Added</th></tr>
             </thead>
@@ -68,12 +65,13 @@ export default function CompostView() {
       ) : <ClusterGraph items={rows} onSelect={setSel} />}
       {picked.size > 0 && (
         <div className="absolute bottom-5 right-5 flex items-center gap-2 rounded-xl border border-border-soft bg-base px-3 py-2 shadow-pop">
-          <span className="text-[12.5px] text-subtext">{picked.size} selected</span>
+          <span className="text-[13.5px] text-subtext">{picked.size} selected</span>
           <Button size="sm" kind="ghost" onClick={() => setPicked(new Set())}>Clear</Button>
-          <Button size="sm" kind="primary" busy={seedFrom.isPending} onClick={() => seedFrom.mutate()}><Sprout size={12} />Create seed</Button>
+          <Button size="sm" kind="primary" onClick={() => setSeedIds([...picked])}><Sprout size={12} />Create seed</Button>
         </div>
       )}
       <AddCompost open={adding} onClose={() => setAdding(false)} />
+      <SeedTypeDialog open={!!seedIds} onClose={() => setSeedIds(null)} busy={seedFrom.isPending} onPick={(t) => seedFrom.mutate(t)} />
     </Page>
   );
 }
@@ -93,8 +91,8 @@ function Row({ item, selected, picked, onPick, onSelect }: { item: CompostItem; 
       <td className="max-w-[280px] px-2 py-1.5"><Cell value={item.title} onSave={(v) => save({ title: v })} bold /></td>
       <td className="max-w-[200px] px-2 py-1.5"><Cell value={item.tags.join(", ")} onSave={(v) => save({ tags: v.split(",").map((x) => x.trim()).filter(Boolean) })} muted /></td>
       <td className="max-w-[300px] px-2 py-1.5"><Cell value={item.notes} placeholder="add a note" onSave={(v) => save({ notes: v })} muted /></td>
-      <td className="px-2 py-2 text-[12px] text-subtext">{item.cluster || "—"}</td>
-      <td className="px-2 py-2 text-[12px] tabular-nums text-muted">{item.date}</td>
+      <td className="px-2 py-2 text-[13px] text-subtext">{item.cluster || "—"}</td>
+      <td className="px-2 py-2 text-[13px] tabular-nums text-muted">{item.date}</td>
     </tr>
   );
 }
@@ -106,11 +104,11 @@ function Cell({ value, onSave, bold, muted, placeholder }: { value: string; onSa
     return <input autoFocus value={edit} onClick={(e) => e.stopPropagation()} onChange={(e) => setEdit(e.target.value)}
       onBlur={() => { if (edit !== value) onSave(edit); setEdit(null); }}
       onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") setEdit(null); }}
-      className="h-7 w-full px-1.5 py-0 text-[13px]" />;
+      className="h-7 w-full px-1.5 py-0 text-[14px]" />;
   }
   return (
     <div onDoubleClick={(e) => { e.stopPropagation(); setEdit(value); }} title="Double-click to edit"
-      className={cx("line-clamp-2 min-h-[22px] cursor-text rounded px-1.5 py-0.5 hover:ring-1 hover:ring-border", bold && "font-medium", muted && "text-[12.5px] text-subtext")}>
+      className={cx("line-clamp-2 min-h-[22px] cursor-text rounded px-1.5 py-0.5 hover:ring-1 hover:ring-border", bold && "font-medium", muted && "text-[13.5px] text-subtext")}>
       {value || <span className="text-muted">{placeholder ?? "—"}</span>}
     </div>
   );
@@ -119,7 +117,7 @@ function Cell({ value, onSave, bold, muted, placeholder }: { value: string; onSa
 function ClusterNode({ data }: NodeProps) {
   const d = data as any;
   return (
-    <div className={cx("rounded-lg border bg-base shadow-card", d.hub ? "border-leaf px-3 py-2 text-[13px] font-semibold text-leaf-ink" : "w-[190px] border-border-soft px-2.5 py-1.5 text-[11.5px]")}>
+    <div className={cx("rounded-lg border bg-base shadow-card", d.hub ? "border-leaf px-3 py-2 text-[14px] font-semibold text-leaf-ink" : "w-[190px] border-border-soft px-2.5 py-1.5 text-[12.5px]")}>
       <Handle type="target" position={Position.Left} className="!h-1 !w-1 !border-0 !bg-transparent" />
       <span className="line-clamp-2">{d.label}</span>
       <Handle type="source" position={Position.Right} className="!h-1 !w-1 !border-0 !bg-transparent" />
@@ -156,27 +154,26 @@ function ClusterGraph({ items, onSelect }: { items: CompostItem[]; onSelect: (id
   );
 }
 
-function CompostInspector({ item, seeds, onClose }: { item: CompostItem; seeds: Seed[]; onClose: () => void }) {
+function CompostInspector({ item, seeds, onClose, onSeed }: { item: CompostItem; seeds: Seed[]; onClose: () => void; onSeed: () => void }) {
   const qc = useQueryClient();
   const del = useMutation({ mutationFn: () => api.del(`/api/compost/${item.id}`), onSuccess: () => { qc.invalidateQueries({ queryKey: ["compost"] }); onClose(); } });
   const toIdeate = async () => { const c = await api.post<{ id: string }>("/api/ideate", { title: item.title, context: [{ kind: "compost", id: item.id }] }); go(`/ideate/${c.id}`); };
-  const toSeed = async () => { const s = await api.post<{ id: string }>("/api/compost/seed", { ids: [item.id] }); qc.invalidateQueries({ queryKey: ["seeds"] }); go(`/greenhouse/${s.id}`); };
   const related = seeds.filter((s) => item.related_seed_ids.includes(s.id));
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-auto p-4">
-        <div className="mb-1 flex items-center gap-1.5 text-[11.5px] text-subtext"><Logo id={item.origin === "feed" ? "rss" : item.origin === "seed" ? "florist" : "manual"} size={12} />{item.source || item.origin} · {item.date}</div>
-        <div className="text-[15px] font-semibold leading-snug">{item.title}</div>
-        {item.links.map((l) => <a key={l} href={l} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1 truncate text-[12px] text-leaf-ink hover:underline"><ExternalLink size={11} />{l.replace(/^https?:\/\//, "").slice(0, 48)}</a>)}
-        {item.summary && <p className="text-[13px] leading-relaxed">{item.summary}</p>}
-        {item.takeaways.length > 0 && <ul className="mt-0 pl-4 text-[12.5px] text-subtext">{item.takeaways.map((t) => <li key={t}>{t}</li>)}</ul>}
-        {item.why_interesting && <div className="mb-2 rounded-md bg-leaf-soft px-2.5 py-1.5 text-[12.5px] text-leaf-ink">{item.why_interesting}</div>}
+        <div className="mb-1 flex items-center gap-1.5 text-[12.5px] text-subtext"><Logo id={item.origin === "feed" ? "rss" : item.origin === "seed" ? "florist" : "manual"} size={12} />{item.source || item.origin} · {item.date}</div>
+        <div className="text-[16px] font-semibold leading-snug">{item.title}</div>
+        {item.links.map((l) => <a key={l} href={l} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1 truncate text-[13px] text-leaf-ink hover:underline"><ExternalLink size={11} />{l.replace(/^https?:\/\//, "").slice(0, 48)}</a>)}
+        {item.summary && <p className="text-[14px] leading-relaxed">{item.summary}</p>}
+        {item.takeaways.length > 0 && <ul className="mt-0 pl-4 text-[13.5px] text-subtext">{item.takeaways.map((t) => <li key={t}>{t}</li>)}</ul>}
+        {item.why_interesting && <div className="mb-2 rounded-md bg-leaf-soft px-2.5 py-1.5 text-[13.5px] text-leaf-ink">{item.why_interesting}</div>}
         <div className="flex flex-wrap gap-1">{[...item.tags, ...item.technologies].slice(0, 10).map((t) => <Chip key={t}>{t}</Chip>)}</div>
-        {related.length > 0 && <div className="mt-3 text-[12px] text-subtext">Linked to {related.map((s) => <button key={s.id} onClick={() => go(`/greenhouse/${s.id}`)} className="mr-1 text-leaf-ink hover:underline">{s.title}</button>)}</div>}
+        {related.length > 0 && <div className="mt-3 text-[13px] text-subtext">Linked to {related.map((s) => <button key={s.id} onClick={() => go(`/greenhouse/${s.id}`)} className="mr-1 text-leaf-ink hover:underline">{s.title}</button>)}</div>}
       </div>
       <div className="flex flex-col gap-1.5 border-t border-border-soft p-3">
         <Button size="sm" kind="primary" onClick={toIdeate}><MessageCircle size={12} />Ideate about it</Button>
-        <Button size="sm" onClick={toSeed}><Sprout size={12} />Start a seed</Button>
+        <Button size="sm" onClick={onSeed}><Sprout size={12} />Start a seed</Button>
         <Button size="sm" kind="ghost" onClick={() => del.mutate()}><Trash2 size={12} />Delete</Button>
       </div>
     </div>

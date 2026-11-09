@@ -11,6 +11,7 @@
         "arxiv",
         "alphaxiv",
         "hf_papers",
+        "hf_hub",
         "github",
         "email",
         "hn",
@@ -18,7 +19,12 @@
         "lobsters",
         "bluesky",
         "mastodon",
-        "folder"
+        "folder",
+        "twitter",
+        "hackster",
+        "medium",
+        "biorxiv",
+        "conference"
       ],
       "title": "Kind",
       "type": "string"
@@ -29,7 +35,7 @@
     },
     "config": {
       "additionalProperties": true,
-      "description": "rss/youtube: url|channel_id; arxiv: category|query; github: repo|topic; email: folder|path; hn: query; reddit: subreddit; lobsters: tag; bluesky: handle; mastodon: account; folder: path",
+      "description": "rss/youtube: url|channel_id; arxiv: category|query; github: mode (new|popular|releases), topic|repo; hf_hub: repo_type (models|datasets|spaces), mode (popular|new), query; email: folder|path; hn: query; reddit: subreddit; lobsters: tag; bluesky: handle; mastodon: account; folder: path; twitter: handle|query, rss_url; medium: mode (tag|author|publication), name; biorxiv: server (biorxiv|medrxiv), subject; conference: venue",
       "title": "Config",
       "type": "object"
     },

@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from .. import paths
 from ..schemas import (
+    Attachment,
     CompostItem,
     ExplorationNode,
     FeedItem,
@@ -201,16 +202,31 @@ def get_feed_item(item_id: str) -> FeedItem | None:
     return _load(FeedItem, q1("SELECT doc FROM feed_items WHERE id=?", (item_id,)))
 
 
-def list_feed(statuses: list[str] | None = None, limit: int = 200) -> list[FeedItem]:
+_FEED_NEWEST = ("COALESCE(NULLIF(substr(json_extract(doc, '$.published'), 1, 10), ''), substr(created, 1, 10)) DESC, "
+                "created DESC")
+
+
+def list_feed(statuses: list[str] | None = None, limit: int = 200, sort: str = "",
+              viewed: bool = False) -> list[FeedItem]:
+    """Feed items. ``sort="recent"`` orders by publication date; otherwise by score (or insertion when unfiltered)."""
+    where, params = [], []
     if statuses:
-        marks = ",".join("?" * len(statuses))
-        rows = q(
-            f"SELECT doc FROM feed_items WHERE status IN ({marks}) ORDER BY score DESC, created DESC LIMIT ?",
-            (*statuses, limit),
-        )
-    else:
-        rows = q("SELECT doc FROM feed_items ORDER BY created DESC LIMIT ?", (limit,))
-    return _loads(FeedItem, rows)
+        where.append(f"status IN ({','.join('?' * len(statuses))})")
+        params += statuses
+    if viewed:
+        where.append("json_extract(doc, '$.viewed_at') != ''")
+    order = _FEED_NEWEST if sort == "recent" else ("score DESC, created DESC" if statuses else "created DESC")
+    clause = f"WHERE {' AND '.join(where)} " if where else ""
+    return _loads(FeedItem, q(f"SELECT doc FROM feed_items {clause}ORDER BY {order} LIMIT ?", (*params, limit)))
+
+
+def put_attachment(a: Attachment) -> Attachment:
+    ex("INSERT OR REPLACE INTO attachments(id, created, doc) VALUES (?,?,?)", (a.id, a.created, _doc(a)))
+    return a
+
+
+def get_attachment(attachment_id: str) -> Attachment | None:
+    return _load(Attachment, q1("SELECT doc FROM attachments WHERE id=?", (attachment_id,)))
 
 
 def put_source(src: FeedSource) -> FeedSource:
