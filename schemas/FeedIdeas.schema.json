@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "FeedIdea": {
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "prompt": {
+          "description": "the idea, 2-4 sentences",
+          "title": "Prompt",
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/Tier",
+          "default": "exploration"
+        },
+        "feed_ids": {
+          "description": "the feed items that inspired it",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Feed Ids",
+          "type": "array"
+        },
+        "connection": {
+          "description": "what these items suggest together and why it suits the user",
+          "title": "Connection",
+          "type": "string"
+        },
+        "technologies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Technologies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "prompt",
+        "feed_ids",
+        "connection"
+      ],
+      "title": "FeedIdea",
+      "type": "object"
+    },
+    "Tier": {
+      "enum": [
+        "exploration",
+        "personal",
+        "formal"
+      ],
+      "title": "Tier",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/FeedIdea"
+      },
+      "maxItems": 5,
+      "title": "Candidates",
+      "type": "array"
+    }
+  },
+  "title": "FeedIdeas",
+  "type": "object"
+}

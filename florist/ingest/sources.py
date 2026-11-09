@@ -6,7 +6,12 @@
 | youtube  | channel_id (channel RSS; transcripts optional) |
 | arxiv    | category (e.g. cs.LG) or query                 |
 | alphaxiv | interval ("7 Days"), sort ("Hot")              |
-| github   | repo ("owner/name" → releases) or topic        |
+| github   | mode new/popular + topic, or releases + repo   |
+| hf_hub   | repo_type, mode popular/new, query             |
+| twitter  | handle or query; X API token or rss_url bridge |
+| medium   | mode tag/author/publication, name              |
+| biorxiv  | server biorxiv/medrxiv, subject                |
+| conference | venue (proceedings + accepted preprints)     |
 | hn       | query (Hacker News stories)                    |
 | email    | folder (IMAP) or path (local .eml/.mbox dir)   |
 """
@@ -21,7 +26,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import feedparser
 import httpx
@@ -120,13 +125,18 @@ def fetch_alphaxiv(src: FeedSource) -> list[FeedItem]:
 
 
 def fetch_github(src: FeedSource) -> list[FeedItem]:
-    if src.config.get("repo"):
+    mode = src.config.get("mode") or ("releases" if src.config.get("repo") else "new")
+    if mode == "releases":
         return _parse_feed(src, f"https://github.com/{src.config['repo']}/releases.atom", limit=10)
     from ..research import github
 
     topic = src.config.get("topic", "machine-learning")
-    since = (datetime.now(timezone.utc) - timedelta(days=int(src.config.get("days", 7)))).date().isoformat()
-    hits = github(f"topic:{topic} created:>={since}", limit=15)
+    if mode == "popular":  # established projects that are still active
+        since = (datetime.now(timezone.utc) - timedelta(days=int(src.config.get("days", 30)))).date().isoformat()
+        hits = github(f"topic:{topic} stars:>={int(src.config.get('min_stars', 500))}", limit=20, since=since)
+    else:
+        since = (datetime.now(timezone.utc) - timedelta(days=int(src.config.get("days", 7)))).date().isoformat()
+        hits = github(f"topic:{topic} created:>={since}", limit=15)
     return [_item(src, external_id=h.external_id, url=h.url, title=h.title, published=h.published,
                   content=f"{h.abstract} (★{h.stars}, {h.venue})") for h in hits]
 
@@ -271,6 +281,145 @@ def fetch_hf_papers(src: FeedSource) -> list[FeedItem]:
     return items
 
 
+def fetch_hf_hub(src: FeedSource) -> list[FeedItem]:
+    """Popular (trending) or newly created models, datasets or Spaces on the Hugging Face Hub."""
+    repo_type = src.config.get("repo_type", "models")
+    if repo_type not in ("models", "datasets", "spaces"):
+        raise ValueError(f"unknown Hugging Face repo type {repo_type!r}")
+    popular = src.config.get("mode", "popular") == "popular"
+    params: dict[str, Any] = {"sort": "trendingScore" if popular else "createdAt", "direction": -1,
+                              "limit": src.config.get("limit", 25)}
+    if src.config.get("query"):
+        params["search"] = src.config["query"]
+    today = datetime.now(timezone.utc).date().isoformat()
+    prefix = {"models": "", "datasets": "datasets/", "spaces": "spaces/"}[repo_type]
+    items = []
+    for r in _fetch(f"https://huggingface.co/api/{repo_type}", **params).json():
+        rid = r.get("id", "")
+        stats = [f"{r['likes']} likes" if r.get("likes") is not None else "",
+                 f"{r['downloads']} downloads" if r.get("downloads") is not None else "",
+                 r.get("pipeline_tag") or r.get("sdk") or ""]
+        tags = [t for t in (r.get("tags") or []) if ":" not in t][:5]
+        # a trending entry is news today, however old the repo is
+        items.append(_item(src, external_id=f"{repo_type}/{rid}", url=f"https://huggingface.co/{prefix}{rid}", title=rid,
+                           author=rid.split("/")[0], published=today if popular else (r.get("createdAt") or "")[:10],
+                           content=f"Hugging Face {repo_type[:-1]}. " + " · ".join(s for s in stats if s), tags=tags))
+    return items
+
+
+def fetch_hackster(src: FeedSource) -> list[FeedItem]:
+    return _parse_feed(src, "https://www.hackster.io/news.atom", limit=30)
+
+
+def fetch_medium(src: FeedSource) -> list[FeedItem]:
+    name = str(src.config.get("name", "")).strip().lstrip("@")
+    if not name:
+        raise ValueError("Medium source needs a tag, author or publication name")
+    path = {"tag": f"tag/{name}", "author": f"@{name}", "publication": name}[src.config.get("mode", "tag")]
+    return _parse_feed(src, f"https://medium.com/feed/{path}", limit=20)
+
+
+def fetch_biorxiv(src: FeedSource) -> list[FeedItem]:
+    server = src.config.get("server", "biorxiv")
+    if server not in ("biorxiv", "medrxiv"):
+        raise ValueError(f"unknown preprint server {server!r}")
+    subject = src.config.get("subject") or "all"
+    return _parse_feed(src, f"https://connect.{server}.org/{server}_xml.php?subject={subject}", limit=40)
+
+
+def fetch_twitter(src: FeedSource) -> list[FeedItem]:
+    """X has no free feed: use the official API with a bearer token, or an RSS bridge the user runs."""
+    if src.config.get("rss_url"):
+        return _untitled_posts(_parse_feed(src, src.config["rss_url"], limit=25), "Post on X")
+    token = config.key_for("twitter")
+    if not token:
+        raise RuntimeError("X tracking needs an X API bearer token (X_BEARER_TOKEN or keys.twitter) or an RSS bridge url")
+    handle = str(src.config.get("handle", "")).lstrip("@")
+    with httpx.Client(timeout=TIMEOUT, headers={"User-Agent": UA, "Authorization": f"Bearer {token}"}) as c:
+        fields = {"max_results": 25, "tweet.fields": "created_at"}
+        if handle:
+            user = c.get(f"https://api.x.com/2/users/by/username/{handle}")
+            user.raise_for_status()
+            r = c.get(f"https://api.x.com/2/users/{user.json()['data']['id']}/tweets",
+                      params={**fields, "exclude": "retweets,replies"})
+        else:
+            r = c.get("https://api.x.com/2/tweets/search/recent", params={**fields, "query": src.config["query"]})
+        r.raise_for_status()
+    return [_item(src, external_id=t["id"], url=f"https://x.com/{handle or 'i'}/status/{t['id']}",
+                  title=" ".join(t.get("text", "").split())[:120] or "Post on X", author=handle,
+                  published=(t.get("created_at") or "")[:10], content=t.get("text", ""))
+            for t in r.json().get("data") or []]
+
+
+VENUES = {
+    "NeurIPS": "Neural Information Processing Systems", "ICML": "International Conference on Machine Learning",
+    "ICLR": "International Conference on Learning Representations", "CVPR": "Computer Vision and Pattern Recognition",
+    "ICCV": "International Conference on Computer Vision", "ECCV": "European Conference on Computer Vision",
+    "ACL": "Annual Meeting of the Association for Computational Linguistics",
+    "EMNLP": "Empirical Methods in Natural Language Processing", "AAAI": "AAAI Conference on Artificial Intelligence",
+    "ICRA": "International Conference on Robotics and Automation",
+    "IROS": "International Conference on Intelligent Robots and Systems", "RSS": "Robotics: Science and Systems",
+    "CoRL": "Conference on Robot Learning", "HRI": "International Conference on Human-Robot Interaction",
+    "SIGGRAPH": "SIGGRAPH", "KDD": "Knowledge Discovery and Data Mining",
+}
+_NOT_ACCEPTED = re.compile(r"submitted|under review|in submission", re.I)
+
+
+def _accepted_preprints(src: FeedSource, venue: str) -> list[FeedItem]:
+    """arXiv papers whose comment says they appear at this venue — proceedings lag these by months."""
+    year = datetime.now(timezone.utc).year
+    query = " OR ".join(f'co:"{venue} {y}"' for y in (year, year + 1))
+    parsed = feedparser.parse(_fetch("https://export.arxiv.org/api/query", search_query=query, sortBy="submittedDate",
+                                     sortOrder="descending", max_results=40).content)
+    items = []
+    for e in parsed.entries:
+        comment = e.get("arxiv_comment", "") or ""
+        if _NOT_ACCEPTED.search(comment):
+            continue
+        when = e.get("published_parsed")
+        items.append(_item(src, external_id=e.get("id", ""), url=e.get("link", ""), title=_strip_html(e.get("title", ""))[:300],
+                           author=e.get("author", ""), published=datetime(*when[:6], tzinfo=timezone.utc).date().isoformat() if when else "",
+                           content=f"{comment}\n\n{_strip_html(e.get('summary', ''))}"[:3000], tags=[venue.lower()]))
+    return items
+
+
+def _proceedings(src: FeedSource, venue: str) -> list[FeedItem]:
+    from ..research import _unindex
+
+    key = config.key_for("openalex")
+    auth = {"api_key": key} if key else {}
+    source_id = src.config.get("openalex_id")
+    if not source_id:  # resolved once, then saved with the source
+        found = _fetch("https://api.openalex.org/sources", search=VENUES.get(venue, venue), filter="type:conference",
+                       per_page=1, select="id", **auth).json().get("results") or []
+        if not found:
+            return []
+        source_id = src.config["openalex_id"] = found[0]["id"].rsplit("/", 1)[-1]
+    since = (datetime.now(timezone.utc) - timedelta(days=int(src.config.get("days", 365)))).date().isoformat()
+    works = _fetch("https://api.openalex.org/works", filter=f"primary_location.source.id:{source_id},from_publication_date:{since}",
+                   sort="publication_date:desc", per_page=30,
+                   select="id,doi,title,publication_date,authorships,abstract_inverted_index", **auth).json()
+    return [_item(src, external_id=w.get("id", ""), url=w.get("doi") or w.get("id", ""), title=(w.get("title") or "").strip()[:300],
+                  author=", ".join(a["author"]["display_name"] for a in (w.get("authorships") or [])[:3] if a.get("author")),
+                  published=w.get("publication_date") or "", content=_unindex(w.get("abstract_inverted_index"))[:3000],
+                  tags=[venue.lower()]) for w in works.get("results", []) if w.get("title")]
+
+
+def fetch_conference(src: FeedSource) -> list[FeedItem]:
+    venue = str(src.config.get("venue", "")).strip()
+    if not venue:
+        raise ValueError("conference source needs a venue")
+    items, errors = [], []
+    for fetcher in (_accepted_preprints, _proceedings):
+        try:
+            items += fetcher(src, venue)
+        except Exception as e:  # one half answering is still useful
+            errors.append(str(e))
+    if errors and not items:
+        raise RuntimeError("; ".join(errors))
+    return items
+
+
 def fetch_reddit(src: FeedSource) -> list[FeedItem]:
     sub = str(src.config.get("subreddit", "MachineLearning")).removeprefix("r/")
     return _parse_feed(src, f"https://www.reddit.com/r/{sub}/top/.rss?t=week", limit=25)
@@ -319,7 +468,8 @@ FETCHERS: dict[str, Callable[[FeedSource], list[FeedItem]]] = {
     "rss": fetch_rss, "youtube": fetch_youtube, "arxiv": fetch_arxiv, "alphaxiv": fetch_alphaxiv,
     "hf_papers": fetch_hf_papers, "github": fetch_github, "hn": fetch_hn, "email": fetch_email,
     "reddit": fetch_reddit, "lobsters": fetch_lobsters, "bluesky": fetch_bluesky, "mastodon": fetch_mastodon,
-    "folder": fetch_folder,
+    "folder": fetch_folder, "hf_hub": fetch_hf_hub, "twitter": fetch_twitter, "hackster": fetch_hackster,
+    "medium": fetch_medium, "biorxiv": fetch_biorxiv, "conference": fetch_conference,
 }
 
 STARTER_SOURCES = [
@@ -328,4 +478,38 @@ STARTER_SOURCES = [
     FeedSource(id="src_hf_daily", kind="hf_papers", name="Hugging Face daily papers"),
     FeedSource(id="src_hn_llm", kind="hn", name="Hacker News: LLM", config={"query": "LLM"}),
     FeedSource(id="src_gh_llm", kind="github", name="GitHub: new llm repos", config={"topic": "llm", "days": 7}),
+]
+# Defaults from the first release: never re-add these to an install that already has sources.
+ORIGINAL_STARTERS = {s.id for s in STARTER_SOURCES}
+
+
+def _off(sid: str, kind: str, label: str, /, **cfg: Any) -> FeedSource:
+    return FeedSource(id=sid, kind=kind, name=label, config=cfg, enabled=False)  # type: ignore[arg-type]
+
+
+STARTER_SOURCES += [  # robotics, machine learning and nearby fields; off until the user switches them on
+    _off("src_arxiv_csro", "arxiv", "arXiv cs.RO (robotics)", category="cs.RO"),
+    _off("src_arxiv_csai", "arxiv", "arXiv cs.AI", category="cs.AI"),
+    _off("src_arxiv_cscv", "arxiv", "arXiv cs.CV (vision)", category="cs.CV"),
+    _off("src_arxiv_cscl", "arxiv", "arXiv cs.CL (language)", category="cs.CL"),
+    _off("src_arxiv_statml", "arxiv", "arXiv stat.ML", category="stat.ML"),
+    _off("src_biorxiv_bioinf", "biorxiv", "bioRxiv: bioinformatics", server="biorxiv", subject="bioinformatics"),
+    _off("src_hf_models_hot", "hf_hub", "Hugging Face: popular models", repo_type="models", mode="popular"),
+    _off("src_hf_models_new", "hf_hub", "Hugging Face: new models", repo_type="models", mode="new"),
+    _off("src_hf_robotics", "hf_hub", "Hugging Face: popular robotics models", repo_type="models", mode="popular", query="robotics"),
+    _off("src_gh_robotics_hot", "github", "GitHub: popular robotics repos", mode="popular", topic="robotics"),
+    _off("src_gh_robotics_new", "github", "GitHub: new robotics repos", mode="new", topic="robotics"),
+    _off("src_gh_ml_hot", "github", "GitHub: popular machine-learning repos", mode="popular", topic="machine-learning"),
+    _off("src_reddit_ml", "reddit", "r/MachineLearning", subreddit="MachineLearning"),
+    _off("src_reddit_robotics", "reddit", "r/robotics", subreddit="robotics"),
+    _off("src_conf_corl", "conference", "CoRL proceedings", venue="CoRL"),
+    _off("src_conf_icra", "conference", "ICRA proceedings", venue="ICRA"),
+    _off("src_conf_neurips", "conference", "NeurIPS proceedings", venue="NeurIPS"),
+    _off("src_hackster", "hackster", "Hackster.io news"),
+    _off("src_medium_robotics", "medium", "Medium: robotics", mode="tag", name="robotics"),
+    _off("src_ieee_robotics", "rss", "IEEE Spectrum: robotics", url="https://spectrum.ieee.org/feeds/topic/robotics.rss"),
+    _off("src_robot_report", "rss", "The Robot Report", url="https://www.therobotreport.com/feed/"),
+    _off("src_ros_discourse", "rss", "ROS Discourse", url="https://discourse.ros.org/latest.rss"),
+    _off("src_bair_blog", "rss", "Berkeley AI Research blog", url="https://bair.berkeley.edu/blog/feed.xml"),
+    _off("src_deepmind_blog", "rss", "Google DeepMind blog", url="https://deepmind.google/blog/rss.xml"),
 ]

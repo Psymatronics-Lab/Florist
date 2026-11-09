@@ -183,6 +183,7 @@ class Seed(Model):
     related_papers: list[str] = Field(default_factory=list)
     compost_ids: list[str] = Field(default_factory=list)
     feed_ids: list[str] = Field(default_factory=list)
+    attachment_ids: list[str] = Field(default_factory=list, description="files the user attached")
     constraints: Constraints = Field(default_factory=Constraints)
     followups: list[FollowUp] = Field(default_factory=list)
     passive: bool = Field(False, description="queued for background growth during downtime")
@@ -204,7 +205,7 @@ class Seed(Model):
 class FeedItem(Model):
     id: str
     source_id: str = ""
-    source_kind: str = Field("manual", description="rss | youtube | arxiv | alphaxiv | github | email | hn | manual")
+    source_kind: str = Field("manual", description="the FeedSource kind, or manual for saved links")
     source_name: str = ""
     external_id: str = ""
     url: str = ""
@@ -220,6 +221,19 @@ class FeedItem(Model):
     why: str = Field("", description="one line: why this matters to you")
     related_seed_ids: list[str] = Field(default_factory=list)
     status: FeedStatus = FeedStatus.new
+    viewed_at: str = Field("", description="when the user first opened this item; empty = not viewed")
+    created: str = Field(default_factory=now_iso)
+
+
+class Attachment(Model):
+    """A file the user attached to a chat; its extracted text is what the models read."""
+
+    id: str
+    name: str
+    mime: str = ""
+    size: int = 0
+    path: str = ""
+    text: str = Field("", description="extracted text")
     created: str = Field(default_factory=now_iso)
 
 
@@ -247,13 +261,16 @@ class CompostItem(Model):
 
 class FeedSource(Model):
     id: str
-    kind: Literal["rss", "youtube", "arxiv", "alphaxiv", "hf_papers", "github", "email", "hn", "reddit", "lobsters",
-                  "bluesky", "mastodon", "folder"]
+    kind: Literal["rss", "youtube", "arxiv", "alphaxiv", "hf_papers", "hf_hub", "github", "email", "hn", "reddit",
+                  "lobsters", "bluesky", "mastodon", "folder", "twitter", "hackster", "medium", "biorxiv", "conference"]
     name: str
     config: dict[str, Any] = Field(
         default_factory=dict,
-        description="rss/youtube: url|channel_id; arxiv: category|query; github: repo|topic; email: folder|path; "
-                    "hn: query; reddit: subreddit; lobsters: tag; bluesky: handle; mastodon: account; folder: path",
+        description="rss/youtube: url|channel_id; arxiv: category|query; github: mode (new|popular|releases), "
+                    "topic|repo; hf_hub: repo_type (models|datasets|spaces), mode (popular|new), query; "
+                    "email: folder|path; hn: query; reddit: subreddit; lobsters: tag; bluesky: handle; "
+                    "mastodon: account; folder: path; twitter: handle|query, rss_url; medium: mode (tag|author|"
+                    "publication), name; biorxiv: server (biorxiv|medrxiv), subject; conference: venue",
     )
     enabled: bool = True
     interval_hours: float = Field(6, gt=0)
@@ -624,6 +641,49 @@ class IdeateReply(Model):
     seed_title: str = ""
 
 
+class SkillReport(Model):
+    reply: str = Field(..., description="markdown report for the chat")
+
+
+class NoveltyReport(Model):
+    novelty: float = Field(..., ge=0, le=1)
+    crowdedness: float = Field(..., ge=0, le=1)
+    gap: str = Field("", description="what is genuinely not done yet; empty if nothing")
+    reply: str = Field(..., description="markdown: closest work, how the idea differs, and what to do about it")
+
+
+class SuggestedSource(Model):
+    kind: Literal["arxiv", "biorxiv", "conference", "github", "hf_hub", "reddit", "hn", "lobsters", "medium",
+                  "youtube", "bluesky", "mastodon", "twitter", "rss"]
+    name: str = Field(..., description="short display name")
+    target: str = Field(..., description="what to follow; its meaning depends on kind (see the skill)")
+    why: str = Field("", description="one line: why this suits the user")
+
+
+class SourceSuggestions(Model):
+    reply: str = Field(..., description="one or two sentences introducing the suggestions")
+    sources: list[SuggestedSource] = Field(default_factory=list, max_length=8)
+
+
+class FeedIdea(Model):
+    title: str
+    prompt: str = Field(..., description="the idea, 2-4 sentences")
+    tier: Tier = Tier.exploration
+    feed_ids: list[str] = Field(..., min_length=1, description="the feed items that inspired it")
+    connection: str = Field(..., description="what these items suggest together and why it suits the user")
+    technologies: list[str] = Field(default_factory=list)
+
+
+class FeedIdeas(Model):
+    candidates: list[FeedIdea] = Field(default_factory=list, max_length=5)
+
+
+class PolishReport(Model):
+    stage: Literal["spark", "shaped", "scoped", "grounded", "ready"]
+    why: str = Field(..., description="one sentence: why the idea is at this stage")
+    reply: str = Field(..., description="markdown: the idea shored up for this stage")
+
+
 class SeedFromChat(Model):
     title: str = Field(..., max_length=80)
     prompt: str = Field(..., description="2-5 sentences: the idea as it now stands, in the user's terms")
@@ -669,12 +729,19 @@ STEP_OUTPUTS: dict[str, type[Model]] = {
     "ideate": IdeateReply,
     "seed_from_chat": SeedFromChat,
     "profile_sync": ProfileSync,
+    "literature_plan": GroundPlan,
+    "literature_review": SkillReport,
+    "novelty": NoveltyReport,
+    "find_sources": SourceSuggestions,
+    "feed_ideas": FeedIdeas,
+    "polish": PolishReport,
 }
 
 RECORDS: dict[str, type[Model]] = {
     "Seed": Seed,
     "FeedItem": FeedItem,
     "FeedSource": FeedSource,
+    "Attachment": Attachment,
     "CompostItem": CompostItem,
     "ExplorationNode": ExplorationNode,
     "Flower": Flower,

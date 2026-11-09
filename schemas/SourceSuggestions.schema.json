@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "SuggestedSource": {
+      "properties": {
+        "kind": {
+          "enum": [
+            "arxiv",
+            "biorxiv",
+            "conference",
+            "github",
+            "hf_hub",
+            "reddit",
+            "hn",
+            "lobsters",
+            "medium",
+            "youtube",
+            "bluesky",
+            "mastodon",
+            "twitter",
+            "rss"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "description": "short display name",
+          "title": "Name",
+          "type": "string"
+        },
+        "target": {
+          "description": "what to follow; its meaning depends on kind (see the skill)",
+          "title": "Target",
+          "type": "string"
+        },
+        "why": {
+          "default": "",
+          "description": "one line: why this suits the user",
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "target"
+      ],
+      "title": "SuggestedSource",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "reply": {
+      "description": "one or two sentences introducing the suggestions",
+      "title": "Reply",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SuggestedSource"
+      },
+      "maxItems": 8,
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "reply"
+  ],
+  "title": "SourceSuggestions",
+  "type": "object"
+}

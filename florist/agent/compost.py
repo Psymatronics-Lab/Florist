@@ -151,11 +151,12 @@ def cached_clusters() -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
-def mining_task() -> dict[str, Any]:
+def mining_task(focus: str = "") -> dict[str, Any]:
     groups = cached_clusters() or clusters(label=False)
     items = {c.id: c for c in db.list_compost()}
     return {
         "profile": profile.brief(),
+        "focus": focus,
         "clusters": [{"label": g["label"], "items": [
             {"id": i, "date": items[i].date, "title": items[i].title, "summary": items[i].summary[:240],
              "tags": items[i].tags} for i in g["items"] if i in items][:15]} for g in groups],
@@ -182,13 +183,13 @@ def apply_mining(out: MiningOutput) -> list[Seed]:
     return created
 
 
-def mine() -> list[Seed]:
+def mine(focus: str = "", model: str | None = None) -> list[Seed]:
     items = db.list_compost()
     if len(items) < 3:
         return []
     out = gateway.complete(
-        gateway.Call(step="mining", hints={"topic": "your compost", "compost": [c.id for c in items[:4]]}),
-        skills.system_prompt("mining"), loop.render_context(mining_task()), MiningOutput,
+        gateway.Call(step="mining", model=model, hints={"topic": "your compost", "compost": [c.id for c in items[:4]]}),
+        skills.system_prompt("mining"), loop.render_context(mining_task(focus)), MiningOutput,
     )
     return apply_mining(out)
 

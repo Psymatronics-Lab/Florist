@@ -748,6 +748,7 @@ dependencies = [
     { name = "litellm" },
     { name = "mcp" },
     { name = "pydantic" },
+    { name = "pypdf" },
     { name = "pyyaml" },
     { name = "rich" },
     { name = "typer" },
@@ -781,6 +782,7 @@ requires-dist = [
     { name = "litellm", specifier = ">=1.50" },
     { name = "mcp", specifier = ">=1.2" },
     { name = "pydantic", specifier = ">=2.8" },
+    { name = "pypdf", specifier = ">=7.0.0" },
     { name = "pywebview", marker = "extra == 'desktop'", specifier = ">=5.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.7" },
@@ -2287,6 +2289,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/79/1f/b5c8294d0d08e6ffe665edb6a0d1cb5ff360e826b06727592400dd3f3847/pyobjc_framework_webkit-13.0-cp314-cp314t-macosx_10_15_universal2.whl", hash = "sha256:98f4342f072dc5adce93802953c1876c9d772d6aa6b8122750a332a3ca28f606", size = 51753, upload-time = "2026-10-30T10:45:35.023Z" },
     { url = "https://files.pythonhosted.org/packages/5d/a2/12748c720f932355e8b07483c2da9b98e39b075ca992de3390064522c980/pyobjc_framework_webkit-13.0-cp315-cp315-macosx_10_15_universal2.whl", hash = "sha256:1ca998217551140bd82b8bbfc09860e975a2d8dc649eb397ee8a6d3a74cfc058", size = 51288, upload-time = "2026-10-30T10:45:35.898Z" },
     { url = "https://files.pythonhosted.org/packages/54/d9/57d5055a9f76583cd699f13b621bcebf4cf13da3ad4ef8e7b76fbfb19503/pyobjc_framework_webkit-13.0-cp315-cp315t-macosx_10_15_universal2.whl", hash = "sha256:a6e6685f2684ff0c1cb09e8fe26f94fc58d2ed146102a3513828a421a04bb57b", size = 51757, upload-time = "2026-10-30T10:45:36.797Z" },
+]
+
+[[package]]
+name = "pypdf"
+version = "7.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/01/19/3e8223d0618bd441eb2b3e105de83ce4187e76f5823d876f60a109ee9072/pypdf-7.0.0.tar.gz", hash = "sha256:061aa78dec270854c912dde80c6bc060486fa955399d643da27ea30afeb6571b", size = 7201622, upload-time = "2026-11-06T12:10:03.447Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8a/21/e83122a25e334c718a4da67004fa94acd7215fe9f8e63a9d7c7f979eb52b/pypdf-7.0.0-py3-none-any.whl", hash = "sha256:112a2c7cbabefd8dfe498f7a13977e575e762d58cdb0d832acb8886922602c6f", size = 413949, upload-time = "2026-11-06T12:10:01.205Z" },
 ]
 
 [[package]]

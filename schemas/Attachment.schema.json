@@ -1,0 +1,44 @@
+{
+  "description": "A file the user attached to a chat; its extracted text is what the models read.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "mime": {
+      "default": "",
+      "title": "Mime",
+      "type": "string"
+    },
+    "size": {
+      "default": 0,
+      "title": "Size",
+      "type": "integer"
+    },
+    "path": {
+      "default": "",
+      "title": "Path",
+      "type": "string"
+    },
+    "text": {
+      "default": "",
+      "description": "extracted text",
+      "title": "Text",
+      "type": "string"
+    },
+    "created": {
+      "title": "Created",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "title": "Attachment",
+  "type": "object"
+}

@@ -26,9 +26,14 @@ BATCH = 12
 
 
 def ensure_starter_sources() -> None:
-    if not db.list_sources():
-        for s in fetchers.STARTER_SOURCES:
+    """Offer each default source once, so a source the user deleted does not come back."""
+    existing = {s.id for s in db.list_sources()}
+    stored = db.kv_get("starter_sources_offered")
+    offered = set(json.loads(stored)) if stored else (set(fetchers.ORIGINAL_STARTERS) if existing else set())
+    for s in fetchers.STARTER_SOURCES:
+        if s.id not in offered and s.id not in existing:
             db.put_source(s)
+    db.kv_set("starter_sources_offered", json.dumps(sorted(offered | {s.id for s in fetchers.STARTER_SOURCES})))
 
 
 def due(src: FeedSource, now: datetime | None = None) -> bool:
@@ -166,8 +171,8 @@ def rerank_all() -> int:
 # ---------------------------------------------------------------------------
 
 
-def act(item_id: str, action: str, seed_id: str = "", note: str = "") -> dict[str, Any]:
-    """compost | attach (to seed_id) | seed (new seed) | dismiss | keep | unfold | open"""
+def act(item_id: str, action: str, seed_id: str = "", note: str = "", tier: str = "exploration") -> dict[str, Any]:
+    """compost | attach (to seed_id) | seed (new seed) | dismiss | keep | unfold | open | view"""
     from ..agent import compost, greenhouse
 
     item = db.get_feed_item(item_id)
@@ -193,7 +198,7 @@ def act(item_id: str, action: str, seed_id: str = "", note: str = "") -> dict[st
         preferences.record("attach", "feed", item.id, feats)
     elif action == "seed":
         prompt = note or f"{item.title}. {item.summary or item.content[:400]}"
-        seed, questions = greenhouse.create_seed(prompt, tier="exploration", title=item.title[:60],
+        seed, questions = greenhouse.create_seed(prompt, tier=tier or "exploration", title=item.title[:60],
                                                  technologies=item.technologies, feed_ids=[item.id], origin="feed")
         item.status = FeedStatus.seeded
         result.update({"seed_id": seed.id, "questions": questions})
@@ -205,9 +210,13 @@ def act(item_id: str, action: str, seed_id: str = "", note: str = "") -> dict[st
         item.status = FeedStatus.kept
         preferences.record("unfold" if action == "unfold" else "keep", "feed", item.id, feats)
     elif action == "open":
+        item.viewed_at = item.viewed_at or now_iso()
         preferences.record("open", "feed", item.id, feats)
+    elif action == "view":  # selecting a row marks it viewed but is too weak to be a taste signal
+        item.viewed_at = item.viewed_at or now_iso()
     else:
         raise ValueError(f"unknown feed action {action}")
     db.put_feed_item(item)
-    db.log_activity("feed", f"{action}: {item.title[:80]}", result.get("seed_id", ""))
+    if action != "view":
+        db.log_activity("feed", f"{action}: {item.title[:80]}", result.get("seed_id", ""))
     return result

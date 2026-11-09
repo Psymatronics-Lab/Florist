@@ -491,11 +491,13 @@ def prep_ground(ctx: Ctx) -> dict[str, Any]:
     flower = db.latest_flower(seed.id)
     compost = [c for c in (db.get_compost(i) for i in seed.compost_ids) if c]
     feed = [f for f in (db.get_feed_item(i) for i in seed.feed_ids) if f]
+    files = [a for a in (db.get_attachment(i) for i in seed.attachment_ids) if a]
     tops = db.list_nodes(seed.id, "direction", "top")
     context = {
         "round": ctx.rnd, "seed": _seed_brief(seed), "profile": profile.brief(),
         "linked_compost": [{"title": c.title, "summary": c.summary, "tags": c.tags} for c in compost],
         "linked_feed": [{"title": f.title, "summary": f.summary or f.content[:300]} for f in feed],
+        "attached_files": [{"title": a.name, "excerpt": a.text[:1500]} for a in files],
         "previous_flower": flower.model_dump(include={"idea", "open_questions", "risks"}) if flower else None,
         "top_directions": [_dir_brief(d) for d in tops],
         "steering": _steering(seed.id),

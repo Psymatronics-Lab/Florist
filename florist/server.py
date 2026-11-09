@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from . import __version__, config, deadlines, gateway, paths, profile, providers, research, skills, stats
-from .agent import compost, context, greenhouse, ideate, loop, pack, preferences, scheduler, seedspec, smoke, visuals
+from .agent import attachments, compost, context, greenhouse, ideate, loop, pack, preferences, scheduler, seedspec, smoke, visuals
 from .ingest import feed
 from .schemas import FeedSource, LearnedPreference
 from .store import db
@@ -488,9 +488,9 @@ def pack_file(path: str, name: str) -> Response:
 
 
 @app.get("/api/feed")
-def get_feed(status: str = Query("kept"), limit: int = 200) -> list[dict[str, Any]]:
+def get_feed(status: str = Query("kept"), limit: int = 200, sort: str = "", viewed: bool = False) -> list[dict[str, Any]]:
     statuses = status.split(",") if status != "all" else None
-    return [i.model_dump(mode="json") for i in db.list_feed(statuses, limit)]
+    return [i.model_dump(mode="json") for i in db.list_feed(statuses, limit, sort, viewed)]
 
 
 @app.post("/api/feed/fetch")
@@ -506,7 +506,7 @@ def feed_link(body: dict[str, str] = Body(...)) -> dict[str, Any]:
 
 @app.post("/api/feed/{item_id}/action")
 def feed_action(item_id: str, body: dict[str, str] = Body(...)) -> dict[str, Any]:
-    return feed.act(item_id, body["action"], body.get("seed_id", ""), body.get("note", ""))
+    return feed.act(item_id, body["action"], body.get("seed_id", ""), body.get("note", ""), body.get("tier", "exploration"))
 
 
 @app.get("/api/sources")
@@ -614,7 +614,8 @@ def seed_files(ref: str) -> dict[str, Any]:
         "artifacts": [{"id": v.id, "title": v.title, "kind": v.kind, "files": v.files} for v in db.list_visuals(seed.id)],
         "packs": packs,
         "context": context.resolve([{"kind": "compost", "id": i} for i in seed.compost_ids]
-                                   + [{"kind": "feed", "id": i} for i in seed.feed_ids]),
+                                   + [{"kind": "feed", "id": i} for i in seed.feed_ids]
+                                   + [{"kind": "file", "id": i} for i in seed.attachment_ids]),
     }
 
 
@@ -661,8 +662,12 @@ def ideate_delete(chat_id: str) -> dict[str, bool]:
 
 @app.post("/api/ideate/{chat_id}/message")
 def ideate_message(chat_id: str, body: dict[str, Any] = Body(...)) -> dict[str, Any]:
-    return ideate.message(chat_id, body["message"], body.get("skills") or [], body.get("model") or None,
-                          body.get("effort"))
+    res = ideate.message(chat_id, body["message"], body.get("skills") or [], body.get("model") or None,
+                         body.get("effort"), body.get("tier", ""))
+    if res.get("seed_id"):
+        ctx = loop.start(res["seed_id"], 1, "live")
+        _bg(loop.drive, ctx)
+    return res
 
 
 @app.post("/api/ideate/{chat_id}/context")
@@ -692,7 +697,13 @@ def compost_search(q: str = "", limit: int = 12) -> list[dict[str, Any]]:
 
 @app.get("/api/composer/skills")
 def composer_skills() -> list[dict[str, str]]:
-    return [{"id": k, "description": v} for k, v in context.COMPOSER_SKILLS.items()]
+    return [{"id": k, **v} for k, v in context.COMPOSER_SKILLS.items()]
+
+
+@app.post("/api/attachments")
+def add_attachment(body: dict[str, str] = Body(...)) -> dict[str, Any]:
+    a = attachments.add(body["name"], body["data"], body.get("mime", ""))
+    return {"id": a.id, "name": a.name, "chars": len(a.text)}
 
 
 # ---------------------------------------------------------------------------
